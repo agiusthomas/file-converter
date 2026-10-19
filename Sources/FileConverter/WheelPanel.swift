@@ -1,4 +1,5 @@
 import AppKit
+import SwiftUI
 import ConverterCore
 
 @MainActor final class WheelPanelController {
@@ -37,9 +38,16 @@ private final class WheelPanel: NSPanel { override var canBecomeKey: Bool { true
 @MainActor private final class WheelView: NSView {
     let sources: [URL]
     let formats: [ImageFormat]
-    var selected: Int? { didSet { needsDisplay = true; updateButtons() } }
+    var selected: Int? {
+        didSet {
+            guard selected != oldValue else { return }
+            artworkState.selected = selected
+            updateButtons()
+        }
+    }
     var onChoose: (([URL], ImageFormat) -> Void)?
     var onCancel: (() -> Void)?
+    private let artworkState = WheelArtworkState()
     private var labelButtons: [NSButton] = []
     private var tracking: NSTrackingArea?
     private var geometry: WheelGeometry { WheelGeometry(count: formats.count) }
@@ -49,6 +57,11 @@ private final class WheelPanel: NSPanel { override var canBecomeKey: Bool { true
         super.init(frame: frame)
         registerForDraggedTypes([.fileURL])
         setAccessibilityRole(.group); setAccessibilityLabel("Conversion wheel")
+        let artwork = WheelArtworkHost(rootView: LiveWheelArtwork(state: artworkState, sources: sources, formats: formats))
+        artwork.frame = bounds
+        artwork.autoresizingMask = [.width, .height]
+        artwork.setAccessibilityElement(false)
+        addSubview(artwork)
         for (index, format) in formats.enumerated() {
             let angle = Double.pi / 2 - Double(index) * 2 * Double.pi / Double(formats.count)
             let centre = NSPoint(x: 210 + cos(angle) * 126, y: 210 + sin(angle) * 126)
@@ -102,48 +115,35 @@ private final class WheelPanel: NSPanel { override var canBecomeKey: Bool { true
     }
     private func updateButtons() {
         for (index, button) in labelButtons.enumerated() {
-            button.contentTintColor = selected == index ? .white : NSColor(calibratedWhite: 0.22, alpha: 1)
+            button.contentTintColor = selected == index ? .white : Theme.inkColor
+            button.setAccessibilityValue(selected == index ? "Selected" : nil)
         }
     }
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        let accent = NSColor(calibratedRed: 0.87, green: 0.30, blue: 0.12, alpha: 1)
-        for index in formats.indices {
-            let path = petal(index)
-            NSGraphicsContext.saveGraphicsState()
-            let shadow = NSShadow(); shadow.shadowColor = NSColor.black.withAlphaComponent(0.14)
-            shadow.shadowBlurRadius = 10; shadow.shadowOffset = NSSize(width: 0, height: -3); shadow.set()
-            (selected == index ? accent : NSColor(calibratedWhite: 0.98, alpha: 0.97)).setFill(); path.fill()
-            NSGraphicsContext.restoreGraphicsState()
-            NSColor.white.withAlphaComponent(0.9).setStroke(); path.lineWidth = 1; path.stroke()
-        }
-        NSColor(calibratedWhite: 0.98, alpha: 0.96).setFill()
-        NSBezierPath(ovalIn: NSRect(x: 160, y: 160, width: 100, height: 100)).fill()
-        let title = selected.map { formats[$0].title } ?? (sources.count == 1 ? sources[0].pathExtension.uppercased() : "\(sources.count) FILES")
-        drawText(title, rect: NSRect(x: 159, y: 207, width: 102, height: 20), font: .systemFont(ofSize: 13, weight: .bold), color: accent)
-        drawText(selected == nil ? "Choose format" : "Drop to convert", rect: NSRect(x: 151, y: 187, width: 118, height: 16), font: .systemFont(ofSize: 10, weight: .medium), color: .secondaryLabelColor)
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateButtons()
     }
-    private func drawText(_ text: String, rect: NSRect, font: NSFont, color: NSColor) {
-        let paragraph = NSMutableParagraphStyle(); paragraph.alignment = .center
-        (text as NSString).draw(in: rect, withAttributes: [.font: font, .foregroundColor: color, .paragraphStyle: paragraph])
+}
+
+@MainActor private final class WheelArtworkState: ObservableObject {
+    @Published var selected: Int?
+}
+
+private struct LiveWheelArtwork: View {
+    @ObservedObject var state: WheelArtworkState
+    let sources: [URL]
+    let formats: [ImageFormat]
+
+    var body: some View {
+        WheelArtwork(formats: formats, selected: state.selected,
+                     title: state.selected.map { formats[$0].title }
+                        ?? (sources.count == 1 ? sources[0].pathExtension.uppercased() : "\(sources.count) FILES"),
+                     subtitle: state.selected == nil ? "Choose format" : "Drop to convert")
     }
-    private func petal(_ index: Int) -> NSBezierPath {
-        let step = 360 / Double(formats.count)
-        let start = 90 - Double(index) * step + step / 2 - 2
-        let end = 90 - Double(index) * step - step / 2 + 2
-        func point(_ radius: Double, _ degrees: Double) -> NSPoint {
-            let angle = degrees * .pi / 180
-            return NSPoint(x: 210 + radius * cos(angle), y: 210 + radius * sin(angle))
-        }
-        let path = NSBezierPath()
-        path.move(to: point(74, start)); path.line(to: point(172, start))
-        path.curve(to: point(186, start - 5), controlPoint1: point(186, start), controlPoint2: point(186, start))
-        path.appendArc(withCenter: NSPoint(x: 210, y: 210), radius: 186, startAngle: start - 5, endAngle: end + 5, clockwise: true)
-        path.curve(to: point(172, end), controlPoint1: point(186, end), controlPoint2: point(186, end))
-        path.line(to: point(74, end))
-        path.curve(to: point(62, end + 5), controlPoint1: point(62, end), controlPoint2: point(62, end))
-        path.appendArc(withCenter: NSPoint(x: 210, y: 210), radius: 62, startAngle: end + 5, endAngle: start - 5, clockwise: false)
-        path.curve(to: point(74, start), controlPoint1: point(62, start), controlPoint2: point(62, start))
-        path.close(); return path
-    }
+}
+
+/// The artwork must never steal native label clicks or Finder drag destinations.
+private final class WheelArtworkHost: NSHostingView<LiveWheelArtwork> {
+    override var isOpaque: Bool { false }
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
 }

@@ -4,7 +4,7 @@ File Converter is in early development. Issues, fixes, accessibility improvement
 
 ## Development
 
-Use a Mac with Xcode 16+ and Swift 6. Apple silicon is the currently tested platform.
+Use a Mac with Xcode 26+ and the macOS 26 SDK. Apple silicon is the currently tested platform. The app's deployment target remains macOS 13; newer glass APIs have availability checks and material fallbacks.
 
 ```sh
 git clone https://github.com/agiusthomas/file-converter.git

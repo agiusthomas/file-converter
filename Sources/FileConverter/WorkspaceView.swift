@@ -2,13 +2,6 @@ import SwiftUI
 import AppKit
 import ConverterCore
 
-private enum Theme {
-    static let accent = Color(red: 0.86, green: 0.29, blue: 0.12)
-    static let paper = Color(nsColor: .windowBackgroundColor)
-    static let warm = Color(red: 0.97, green: 0.95, blue: 0.91)
-    static let ink = Color.primary
-}
-
 struct WorkspaceView: View {
     @ObservedObject var model: AppModel
     var body: some View {
@@ -37,6 +30,7 @@ struct WorkspaceView: View {
                 footer
             }.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .foregroundStyle(Theme.ink)
         .background(Theme.paper)
         .tint(Theme.accent)
         .frame(minWidth: 930, minHeight: 650)
@@ -60,7 +54,8 @@ struct WorkspaceView: View {
                 Text("No uploads. No waiting room.").font(.system(size: 10)).foregroundStyle(.secondary)
             }.padding(12)
         }.padding(.horizontal, 15).padding(.top, 28).padding(.bottom, 20)
-        .frame(maxHeight: .infinity).background(Theme.warm.opacity(0.6))
+        .frame(maxHeight: .infinity)
+        .background { GlacierSidebarSurface() }
     }
     private func navigation(_ page: WorkspacePage, icon: String) -> some View {
         Button { model.page = page } label: {
@@ -73,7 +68,9 @@ struct WorkspaceView: View {
                 }
             }.foregroundStyle(model.page == page ? Theme.accent : .primary)
                 .padding(.horizontal, 12).padding(.vertical, 11)
-                .background(model.page == page ? Theme.accent.opacity(0.09) : .clear, in: RoundedRectangle(cornerRadius: 10))
+                .background {
+                    if model.page == page { GlacierGlass(shape: RoundedRectangle(cornerRadius: 10)) }
+                }
                 .contentShape(Rectangle())
         }.buttonStyle(.plain).padding(.bottom, 4)
     }
@@ -87,8 +84,10 @@ struct WorkspaceView: View {
                     .foregroundStyle(model.wheelEnabled ? Theme.accent : .secondary)
                 Text(model.wheelEnabled ? "Shift wheel on" : "Shift wheel paused")
             }.font(.system(size: 11)).foregroundStyle(.secondary)
+                .padding(.horizontal, 11).padding(.vertical, 7)
+                .background { GlacierGlass(shape: Capsule()) }
             Button { model.pickFiles() } label: { Label("Add images", systemImage: "plus") }
-                .buttonStyle(.bordered).padding(.leading, 14)
+                .buttonStyle(GlacierActionStyle()).padding(.leading, 10)
         }.padding(.horizontal, 28).frame(height: 66)
     }
     private var conversionPage: some View {
@@ -101,13 +100,12 @@ struct WorkspaceView: View {
                         .font(.system(size: 12)).foregroundStyle(.secondary).lineSpacing(5)
                     HStack(spacing: 7) {
                         Text("⇧").font(.system(size: 20, weight: .medium)).frame(width: 34, height: 32)
-                            .background(.background, in: RoundedRectangle(cornerRadius: 7))
-                            .overlay(RoundedRectangle(cornerRadius: 7).stroke(.primary.opacity(0.1)))
+                            .background { GlacierGlass(shape: RoundedRectangle(cornerRadius: 7)) }
                         Text("+ drag an image").font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
                     }.padding(.top, 2)
                 }.frame(maxWidth: .infinity, alignment: .leading).padding(.top, 8)
                 WheelIllustration(formats: model.registry.writableFormats).frame(width: 258, height: 232)
-                    .background(Theme.warm, in: RoundedRectangle(cornerRadius: 22))
+                    .modifier(GlacierCard(radius: 22))
                     .accessibilityLabel("Conversion wheel illustration. Hold Shift and drag an image in Finder.")
             }
             FileDropZone(model: model).frame(height: 126)
@@ -123,7 +121,7 @@ struct WorkspaceView: View {
                             HStack(spacing: 6) {
                                 Image(nsImage: NSWorkspace.shared.icon(forFile: url.path)).resizable().frame(width: 21, height: 21)
                                 Text(url.lastPathComponent).font(.system(size: 10)).lineLimit(1).truncationMode(.middle)
-                            }.padding(8).background(.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 8))
+                            }.padding(8).background(Theme.accent.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
                         }
                         if model.sources.count > 3 { Text("+\(model.sources.count - 3)").font(.caption).foregroundStyle(.secondary) }
                     }
@@ -133,13 +131,12 @@ struct WorkspaceView: View {
                             ForEach(model.formats) { format in Text(format.title).tag(format) }
                         }.labelsHidden().frame(width: 125)
                         Spacer()
-                        Button { model.onShowWheel?(model.sources) } label: { Label("Open wheel", systemImage: "circle.hexagongrid") }.buttonStyle(.bordered)
+                        Button { model.onShowWheel?(model.sources) } label: { Label("Open wheel", systemImage: "circle.hexagongrid") }.buttonStyle(GlacierActionStyle())
                         Button { model.convertSelection() } label: {
                             Label("Convert \(model.sources.count == 1 ? "image" : "images")", systemImage: "arrow.right")
-                        }.buttonStyle(.borderedProminent).disabled(model.formats.isEmpty || model.isCancelling)
+                        }.buttonStyle(GlacierActionStyle(prominent: true)).disabled(model.formats.isEmpty || model.isCancelling)
                     }
-                }.padding(18).background(.background, in: RoundedRectangle(cornerRadius: 14))
-                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(.primary.opacity(0.07)))
+                }.padding(18).modifier(GlacierCard())
             }
             HStack(spacing: 18) {
                 Label("Originals stay safe", systemImage: "checkmark.shield")
@@ -179,7 +176,7 @@ struct WorkspaceView: View {
                     Image(systemName: "tray").font(.system(size: 35, weight: .light)).foregroundStyle(.secondary)
                     Text("A clean slate.").font(.system(size: 17, weight: .medium))
                     Text("Finished conversions and their saved files appear here.").font(.system(size: 12)).foregroundStyle(.secondary)
-                    Button("Choose images") { model.pickFiles() }.buttonStyle(.bordered).padding(.top, 7)
+                    Button("Choose images") { model.pickFiles() }.buttonStyle(GlacierActionStyle()).padding(.top, 7)
                 }.frame(maxWidth: .infinity).padding(.vertical, 90)
             } else {
                 ForEach(model.jobs.reversed()) { job in JobRow(job: job, reveal: model.reveal) }
@@ -242,8 +239,7 @@ struct WorkspaceView: View {
             Text(title).font(.system(size: 9, weight: .bold)).tracking(1.5).foregroundStyle(.secondary)
             content()
         }.padding(20).frame(maxWidth: .infinity, alignment: .leading)
-            .background(.background, in: RoundedRectangle(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(.primary.opacity(0.07)))
+            .modifier(GlacierCard())
     }
     private var footer: some View {
         VStack(spacing: 0) {
@@ -259,7 +255,7 @@ struct WorkspaceView: View {
                     Text("Originals are never replaced")
                 }
             }.font(.system(size: 10)).foregroundStyle(.secondary).padding(.horizontal, 28).frame(height: 36)
-        }.background(Theme.warm.opacity(0.35))
+        }.background(Theme.surface.opacity(0.95))
     }
 }
 
@@ -289,47 +285,20 @@ private struct JobRow: View {
             if let output = job.output {
                 Button { reveal(output) } label: { Image(systemName: "folder") }.buttonStyle(.plain).help("Show \(output.lastPathComponent) in Finder")
             }
-        }.padding(13).background(.background, in: RoundedRectangle(cornerRadius: 11))
-            .overlay(RoundedRectangle(cornerRadius: 11).stroke(.primary.opacity(0.06)))
+        }.padding(13).modifier(GlacierCard(radius: 11))
     }
 }
 
 private struct WheelIllustration: View {
     let formats: [ImageFormat]
     var body: some View {
-        GeometryReader { proxy in
-            let items = Array(formats.prefix(6))
-            let centre = CGPoint(x: proxy.size.width / 2, y: 109)
-            ZStack {
-                ForEach(Array(items.enumerated()), id: \.offset) { index, format in
-                    let angle = -Double.pi / 2 + Double(index) * 2 * .pi / Double(items.count)
-                    PreviewPetal(index: index, count: items.count)
-                        .fill(index == 0 ? Theme.accent : Color(nsColor: .controlBackgroundColor))
-                        .overlay(PreviewPetal(index: index, count: items.count).stroke(.white.opacity(0.8), lineWidth: 1))
-                    Text(format.title).font(.system(size: 9, weight: .bold, design: .monospaced))
-                        .foregroundStyle(index == 0 ? .white : .secondary)
-                        .position(x: centre.x + cos(angle) * 69, y: centre.y + sin(angle) * 69)
-                }
-                VStack(spacing: 1) { Text("⇧").font(.system(size: 27, weight: .medium)); Text("DRAG").font(.system(size: 7, weight: .semibold)).tracking(1) }
-                    .foregroundStyle(Theme.accent).position(centre)
-                Text("A shortcut around your files.").font(.system(size: 10)).foregroundStyle(.secondary).position(x: centre.x, y: 216)
-            }
-        }.accessibilityHidden(true)
-    }
-}
-
-private struct PreviewPetal: Shape {
-    let index: Int
-    let count: Int
-    func path(in rect: CGRect) -> Path {
-        let centre = CGPoint(x: rect.midX, y: 109)
-        let step = 360 / Double(max(1, count))
-        let start = -90 + Double(index) * step - step / 2 + 3
-        let end = -90 + Double(index) * step + step / 2 - 3
-        var path = Path()
-        path.addArc(center: centre, radius: 95, startAngle: .degrees(start), endAngle: .degrees(end), clockwise: false)
-        path.addArc(center: centre, radius: 34, startAngle: .degrees(end), endAngle: .degrees(start), clockwise: true)
-        path.closeSubpath(); return path
+        VStack(spacing: 0) {
+            WheelArtwork(formats: formats, selected: formats.isEmpty ? nil : 0,
+                         title: "⇧", subtitle: "DRAG", showsFormatLabels: true)
+                .frame(width: 214, height: 204)
+            Text("A shortcut around your files.")
+                .font(.system(size: 10)).foregroundStyle(.secondary)
+        }.frame(maxWidth: .infinity, maxHeight: .infinity).accessibilityHidden(true)
     }
 }
 
@@ -367,6 +336,8 @@ private struct FileDropZone: NSViewRepresentable {
 
 private struct DropArtwork: View {
     @ObservedObject var highlight: DropHighlight
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorSchemeContrast) private var contrast
     var choose: () -> Void
     var body: some View {
         Button(action: choose) {
@@ -380,9 +351,12 @@ private struct DropArtwork: View {
                 Spacer()
                 Image(systemName: "plus").font(.system(size: 15, weight: .medium)).foregroundStyle(Theme.accent)
             }.padding(24).frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Theme.accent.opacity(highlight.active ? 0.08 : 0.025), in: RoundedRectangle(cornerRadius: 16))
-                .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.accent.opacity(highlight.active ? 0.7 : 0.25), style: StrokeStyle(lineWidth: 1.2, dash: [5, 5])))
+                .background { GlacierGlass(shape: RoundedRectangle(cornerRadius: 16)) }
+                .overlay { RoundedRectangle(cornerRadius: 16).fill(Theme.accent.opacity(highlight.active ? 0.12 : 0)).allowsHitTesting(false) }
+                .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.accent.opacity(highlight.active || contrast == .increased ? 1 : 0.45), style: StrokeStyle(lineWidth: highlight.active || contrast == .increased ? 2 : 1.2, dash: highlight.active ? [] : [5, 5])))
                 .contentShape(Rectangle())
-        }.buttonStyle(.plain).accessibilityLabel("Choose images, or drop images here")
+        }.buttonStyle(.plain).foregroundStyle(Theme.ink)
+            .animation(reduceMotion ? nil : .easeInOut(duration: 0.15), value: highlight.active)
+            .accessibilityLabel("Choose images, or drop images here")
     }
 }

@@ -23,6 +23,16 @@
 - Native UI wheel exposes format buttons to accessibility. The inspected PNG wheel contains JPG/HEIC/TIFF/AVIF/BMP/PDF; PNG is excluded as the input format.
 - Automated tests validate Shift-before/during-drag transitions, stale pasteboard suppression, cancelled sessions and wheel geometry. **Physical Finder Shift-drag and drop interception remain manually unverified** because the available input tool does not reliably preserve Shift across a drag.
 
+## Glacier UI refresh
+
+- Shared ice/sapphire and deep-blue/azure palettes follow the Mac's appearance across the workspace and AppKit wheel labels.
+- Native macOS 26 Liquid Glass is used for the wheel, navigation selection, wheel status, shortcut key and drop area; native glass button styles distinguish secondary actions from the primary conversion action. Settings and activity use quieter opaque cards.
+- The wheel and its illustration share rounded petal artwork. The live artwork is hosted beneath the existing AppKit buttons and returns no hit-test target, preserving native click, keyboard and drag handling. Selection tint remains blue outside the glass container so inactive panels retain readable white labels.
+- All newer APIs are availability-guarded; macOS 13–15 use material and bordered-button fallbacks. Building now requires the macOS 26 SDK / Xcode 26+. An older macOS runtime was not available for verification.
+- Release build and signature verification passed. All 13 existing core tests passed. Native UI checks covered Convert, Activity and Settings in light/dark appearance; empty and populated selections; minimum window size with scrolling; opaque Reduce Transparency surfaces; Increase Contrast boundaries; and wheel selection with Reduce Motion enabled. Original display preferences were restored afterward.
+- Keyboard arrows, Return conversion, Escape dismissal and native wheel-button conversion were verified. A batch of two 6000 × 6000 PNG fixtures converted successfully to HEIC and JPG, alongside a deliberately malformed fixture that displayed a failure without preventing the successful results. These fixtures and outputs are local ignored build artifacts.
+- The conversion queue finished before the UI tool captured its running state. Physical Finder Shift-drag, live drop/hover behavior over different desktops, screen-edge/multi-display placement, and older-macOS runtime appearance still need manual checks; their existing interaction logic and geometry were retained.
+
 ## Current scope limits
 
 This implements the first image-conversion slice. It does not yet include external encoders/WebP output; video/audio; PDF input and PDF editing; document/EPUB/Office engines; archives/subtitles; editing/redaction/compression tools; file actions and floating shelves; or production distribution.

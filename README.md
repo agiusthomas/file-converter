@@ -2,7 +2,9 @@
 
 A native, open-source macOS file converter with a Shift-drag conversion wheel, batch image conversion, and local processing. Built with SwiftUI, AppKit, and ImageIO. Licensed under [MIT](LICENSE).
 
-The first build focuses on images. Requires macOS 13+ and Apple silicon; build with Xcode 16+ / Swift 6. Apple silicon is the currently tested platform.
+The first build focuses on images. Requires macOS 13+ and Apple silicon; build with Xcode 26+ / the macOS 26 SDK. Apple silicon is the currently tested platform.
+
+The Glacier theme follows the Mac’s light or dark appearance. The workspace and conversion wheel use native Liquid Glass on macOS 26+, with frosted material fallbacks on older releases. Reduce Transparency, Reduce Motion, and increased display contrast are respected.
 
 ## Run the app
 
