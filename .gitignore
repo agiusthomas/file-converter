@@ -1,0 +1,16 @@
+.build/
+build/
+.DS_Store
+*.xcuserstate
+.swiftpm/xcode/xcuserdata/
+
+# Local investigation material and personal conversion samples.
+research/
+
+# Local settings, credentials, and private signing material.
+.env
+.env.*
+!.env.example
+*.p12
+*.p8
+*.mobileprovision
