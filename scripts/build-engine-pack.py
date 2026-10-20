@@ -20,6 +20,7 @@ parser.add_argument('--payload', required=True, type=Path, help='Directory whose
 parser.add_argument('--output', required=True, type=Path, help='New .bundle path')
 parser.add_argument('--identity', help='Developer ID Application identity; omit only for an unusable unsigned fixture')
 parser.add_argument('--notary-profile', help='Optional stored notarytool profile for the resulting ZIP')
+parser.add_argument('--notary-keychain', help='Keychain holding the existing notary profile, if not the default')
 args = parser.parse_args()
 config = json.loads(args.config.read_text())
 if config.get('id') not in {'media', 'documents', 'ebooks', 'transcription', 'pdf'}:
@@ -72,10 +73,18 @@ with tempfile.TemporaryDirectory(prefix='converter-pack-', dir=args.output.paren
                 if stream.read(4) in macho_magic:
                     binaries.append(file)
     if args.identity:
+        inherited_entitlements = Path(temporary) / 'inherited.plist'
+        with inherited_entitlements.open('wb') as stream:
+            plistlib.dump({'com.apple.security.app-sandbox': True, 'com.apple.security.inherit': True}, stream)
         for file in sorted(binaries, key=lambda x: len(x.parts), reverse=True):
             if file == macos / 'pack-anchor':
                 continue  # Signed once with the outer bundle after its manifest exists.
-            subprocess.run(['codesign', '--force', '--options', 'runtime', '--timestamp', '--sign', args.identity, str(file)], check=True)
+            signing = ['codesign', '--force', '--options', 'runtime', '--timestamp', '--sign', args.identity]
+            # Child executables inherit the worker's sandbox, with no extra grants.
+            # Dylibs do not carry process sandbox entitlements.
+            if config.get('sandboxInheritance') and str(file.relative_to(bundle)) in tools.values():
+                signing += ['--entitlements', str(inherited_entitlements)]
+            subprocess.run(signing + [str(file)], check=True)
     hashes = {}
     for file in sorted(bundle.rglob('*')):
         if file.is_file() and file != macos / 'pack-anchor':
@@ -91,13 +100,35 @@ with tempfile.TemporaryDirectory(prefix='converter-pack-', dir=args.output.paren
     if args.identity:
         subprocess.run(['codesign', '--force', '--options', 'runtime', '--timestamp', '--sign', args.identity, str(bundle)], check=True)
         subprocess.run(['codesign', '--verify', '--deep', '--strict', str(bundle)], check=True)
+    # Include the manifest, Info.plist, signed anchor and seal in logical installed
+    # bytes. The anchor is not payload-hashed, so adjusting this signed metadata
+    # does not introduce a manifest/anchor hash cycle.
+    for attempt in range(4):
+        total = sum(file.stat().st_size for file in bundle.rglob('*') if file.is_file())
+        if manifest['installedBytes'] == total:
+            break
+        manifest['installedBytes'] = total
+        (resources / 'engine.json').write_text(json.dumps(manifest, indent=2, sort_keys=True)+'\n')
+        if args.identity:
+            subprocess.run(['codesign', '--force', '--options', 'runtime', '--timestamp', '--sign', args.identity, str(bundle)], check=True)
+    else:
+        raise SystemExit('Installed size did not stabilize; bundle retained only in temporary assembly')
+    if args.identity:
+        subprocess.run(['codesign', '--verify', '--deep', '--strict', str(bundle)], check=True)
     shutil.move(bundle, args.output)
 archive = args.output.with_suffix('.zip')
 if archive.exists():
     parser.error('ZIP output already exists; the assembled bundle was retained')
 subprocess.run(['ditto', '-c', '-k', '--keepParent', '--norsrc', '--noextattr', str(args.output), str(archive)], check=True)
 if args.notary_profile:
-    subprocess.run(['xcrun', 'notarytool', 'submit', str(archive), '--keychain-profile', args.notary_profile, '--wait'], check=True)
+    notarize = ['xcrun', 'notarytool', 'submit', str(archive), '--keychain-profile', args.notary_profile, '--wait', '--output-format', 'json']
+    if args.notary_keychain:
+        notarize += ['--keychain', args.notary_keychain]
+    result = subprocess.run(notarize, check=True, capture_output=True, text=True)
+    record = json.loads(result.stdout)
+    args.output.with_suffix('.notary.json').write_text(json.dumps(record, indent=2) + '\n')
+    if record.get('status') != 'Accepted':
+        raise SystemExit('Pack notarization was not accepted; inspect the saved notary record')
     # Bundles carry notarization through the submitted archive; app releases are
     # separately stapled and assessed by release-app.sh.
 archive_digest = hashlib.sha256()

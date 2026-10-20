@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0069077182F34B091945D99F /* Worker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B44BD3994C29387FEC998D9A /* Worker.swift */; };
 		0C49F207C7AB125788BE2866 /* WheelPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2E2C31365D8D8CF6F305EBB /* WheelPanel.swift */; };
+		16E548061E4BA9C7AAE4913C /* EngineAcceptance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D932C04CCD9E96479985E717 /* EngineAcceptance.swift */; };
 		2033F7DFB437F450F2692241 /* EngineCatalog.json in Resources */ = {isa = PBXBuildFile; fileRef = 8B34E642C7CF643C634E3989 /* EngineCatalog.json */; };
 		28B75131B6C166A24A1CAC1F /* GlacierTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66EF70C6B873C55C83EBCF7E /* GlacierTheme.swift */; };
 		2CCB29315AFF4A4FCE96AA32 /* ConverterCore in Frameworks */ = {isa = PBXBuildFile; productRef = 35D82C67053996AA0916070F /* ConverterCore */; };
@@ -16,6 +17,7 @@
 		38A5F4E9C92438B5B59C7284 /* DragMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A21E5A7C190F0BE390C142E /* DragMonitor.swift */; };
 		3A7702D9878A6E6EDA8EA036 /* ConversionWorker.xpc in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5E29BE091EA86B4E68325541 /* ConversionWorker.xpc */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3CC6018B76679C94C819C29F /* Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C66575F79E77E8B479DDB1E /* Shortcuts.swift */; };
+		5970B2268CDF5BD8B3C4316B /* EngineLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2810EA608D0364E118F5E7A0 /* EngineLibraryView.swift */; };
 		5C34E8E81B92D0F10D4C1825 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7940E481E3B1D2CE65E5EF /* main.swift */; };
 		6D3781756B4A8FF2F9D93481 /* WheelArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C7BF8F979D0E730BF5798D /* WheelArtwork.swift */; };
 		CB1633D07D919FFE9257F349 /* RecipeEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477B919240E0D11A1005F802 /* RecipeEditor.swift */; };
@@ -50,6 +52,7 @@
 
 /* Begin PBXFileReference section */
 		08CDD14D35D31E22F32A43DC /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
+		2810EA608D0364E118F5E7A0 /* EngineLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineLibraryView.swift; sourceTree = "<group>"; };
 		32CC12570FBB1CBBD7983140 /* ThirdParty */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ThirdParty; path = Configuration/ThirdParty; sourceTree = SOURCE_ROOT; };
 		477B919240E0D11A1005F802 /* RecipeEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeEditor.swift; sourceTree = "<group>"; };
 		56214A18D68B81336EB391E4 /* WorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceView.swift; sourceTree = "<group>"; };
@@ -64,6 +67,7 @@
 		95C7BF8F979D0E730BF5798D /* WheelArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WheelArtwork.swift; sourceTree = "<group>"; };
 		A2E2C31365D8D8CF6F305EBB /* WheelPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WheelPanel.swift; sourceTree = "<group>"; };
 		B44BD3994C29387FEC998D9A /* Worker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Worker.swift; sourceTree = "<group>"; };
+		D932C04CCD9E96479985E717 /* EngineAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineAcceptance.swift; sourceTree = "<group>"; };
 		EE7940E481E3B1D2CE65E5EF /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -120,6 +124,8 @@
 				08CDD14D35D31E22F32A43DC /* Application.swift */,
 				8A286AF8515B29677290DFCB /* AppModel.swift */,
 				8A21E5A7C190F0BE390C142E /* DragMonitor.swift */,
+				D932C04CCD9E96479985E717 /* EngineAcceptance.swift */,
+				2810EA608D0364E118F5E7A0 /* EngineLibraryView.swift */,
 				66EF70C6B873C55C83EBCF7E /* GlacierTheme.swift */,
 				477B919240E0D11A1005F802 /* RecipeEditor.swift */,
 				7C66575F79E77E8B479DDB1E /* Shortcuts.swift */,
@@ -261,6 +267,8 @@
 				311FF4FC890AF00A9B9BBADD /* AppModel.swift in Sources */,
 				CB3931E8B6C8E97310DE0A89 /* Application.swift in Sources */,
 				38A5F4E9C92438B5B59C7284 /* DragMonitor.swift in Sources */,
+				16E548061E4BA9C7AAE4913C /* EngineAcceptance.swift in Sources */,
+				5970B2268CDF5BD8B3C4316B /* EngineLibraryView.swift in Sources */,
 				28B75131B6C166A24A1CAC1F /* GlacierTheme.swift in Sources */,
 				CB1633D07D919FFE9257F349 /* RecipeEditor.swift in Sources */,
 				3CC6018B76679C94C819C29F /* Shortcuts.swift in Sources */,

@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "id": "media",
+    "version": "0.1.2",
+    "url": "https://github.com/agiusthomas/file-converter/releases/download/engine-media-v0.1.2/Media-0.1.2.zip",
+    "sha256": "419e2db4491978df9773ef5b7ee70edf1aeb4b2f51265065566e931052791dbb",
+    "downloadBytes": 21870879,
+    "installedBytes": 33491160,
+    "minimumAppVersion": "0.2.1",
+    "minimumOSVersion": "13.0",
+    "architectures": ["arm64"],
+    "publisherTeam": "QJ75C25V8L",
+    "notice": "Qualification preview · FFmpeg 8.1.2, LGPL-2.1-or-later. FLAC and H.264/AAC conversion and cancellation are qualified on macOS 26.5.1. macOS 13 execution and clean offline installation remain unverified. MP3, Opus and VP9/WebM encoders are not included in this initial runtime; their pinned dependencies and the complete Media workflows remain required. Full source and license notices are included."
+  }
+]

@@ -34,8 +34,8 @@ targets:
         CFBundleIdentifier: io.local.file-converter
         CFBundleDisplayName: File Converter
         CFBundleName: File Converter
-        CFBundleShortVersionString: "0.2.0"
-        CFBundleVersion: "2"
+        CFBundleShortVersionString: "0.2.1"
+        CFBundleVersion: "3"
         ConversionWorkerServiceName: "$(CONVERTER_WORKER_SERVICE_IDENTIFIER)"
         LSUIElement: true
         NSHighResolutionCapable: true
@@ -70,8 +70,8 @@ targets:
       properties:
         CFBundleIdentifier: "$(CONVERTER_WORKER_SERVICE_IDENTIFIER)"
         CFBundleName: ConversionWorker
-        CFBundleVersion: "2"
-        CFBundleShortVersionString: "0.2.0"
+        CFBundleVersion: "3"
+        CFBundleShortVersionString: "0.2.1"
         XPCService:
           ServiceType: Application
           RunLoopType: NSRunLoop

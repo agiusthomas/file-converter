@@ -51,16 +51,20 @@ Start with checkpoint 1 below. It is an early engineering proof for the shared a
 
 ### Checkpoint 1 — prove a real production pack
 
-- [ ] Audit `EnginePacks.swift`, `WorkerTransport.swift`, `ExternalEngine.swift`, the bundled catalog, pack builder and worker entitlements. Confirm what the signed app actually grants to an installed executable, its libraries/resources, staged inputs and outputs.
-- [ ] Build a pinned, relocatable arm64 FFmpeg runtime independently, with an explicit codec/license configuration and all required dependencies/notices. Choose and verify versions against macOS 13; do not assume current upstream binaries meet that target. Do not copy executables out of another installed app or require Homebrew on the user's Mac.
-- [ ] Validate architecture, deployment target, dynamic-library paths, resource discovery and child-process cancellation for the whole runtime. Sign nested executable code and the pack without circular manifest hashing. Notarize executable pack artifacts as needed for direct distribution.
-- [ ] Install the real pack into an isolated test store through production verification. Run an audio and a video conversion from the Developer ID signed app through its sandboxed XPC worker, with originals protected. Reopen the outputs and confirm cancellation terminates child processes.
-- [ ] Test update and rollback between actual runtime versions, tamper rejection, and removal deferred while a job pins a version. Preserve the previous working version after an unsuccessful update.
-- [ ] Record the exact build, manifest, signatures, fixture results and production path. If sandbox execution fails, fix the worker/access/pack architecture; do not disable sandboxing or signature checks, import another app's runtime, or claim the development CLI proves the app path.
+Current status: **verified on the current Mac**. Independent FFmpeg 8.1.1/8.1.2 runtimes execute through the Developer ID signed app and sandboxed XPC worker. Observed-child cancellation, original integrity, independent reopening, real-version update/rollback, tamper rejection, reinstall rollback preservation, pinned removal/reclamation and actual catalog download interruption/retry pass. Media 0.1.2 is published as a qualification preview; app 0.2.1 remains a local signed candidate. Native window download/import/update/rollback/removal and downloaded-pack conversion pass. Exact builds, artifacts, observed results and platform/codec limits: [checkpoint evidence](FFMPEG_CHECKPOINT.md), [machine-readable summary](evidence/media-0.1.2-checkpoint.json). This engineering checkpoint does not pass the full milestone 1 or Media release gate.
+
+- [x] Audit `EnginePacks.swift`, `WorkerTransport.swift`, `ExternalEngine.swift`, the bundled catalog, pack builder and worker entitlements. Confirm what the signed app actually grants to an installed executable, its libraries/resources, staged inputs and outputs.
+- [x] Build a pinned, relocatable arm64 FFmpeg runtime independently, with an explicit codec/license configuration and all required dependencies/notices. Choose and verify versions against macOS 13; do not assume current upstream binaries meet that target. Do not copy executables out of another installed app or require Homebrew on the user's Mac.
+- [x] Validate architecture, deployment target, dynamic-library paths, resource discovery and child-process cancellation for the whole runtime. Sign nested executable code and the pack without circular manifest hashing. Notarize executable pack artifacts as needed for direct distribution.
+- [x] Install the real pack into an isolated test store through production verification. Run an audio and a video conversion from the Developer ID signed app through its sandboxed XPC worker, with originals protected. Reopen the outputs and confirm cancellation terminates child processes.
+- [x] Test update and rollback between actual runtime versions, tamper rejection, and removal deferred while a job pins a version. Preserve the previous working version after an unsuccessful update.
+- [x] Record the exact build, manifest, signatures, fixture results and production path. If sandbox execution fails, fix the worker/access/pack architecture; do not disable sandboxing or signature checks, import another app's runtime, or claim the development CLI proves the app path.
 
 **Checkpoint passes:** a real independently packaged engine, rather than the owned signing acceptance program, works through the installed signed app and production worker.
 
 ### Milestone 1 — finish the foundation and pack delivery
+
+Current status: **in progress**. Media artifact publication and the sealed-catalog/native pack lifecycle are implemented and verified on this host. Cross-process runtime leases, deferred reclamation, same-coordinator capability refresh, bounded streamed downloads and cancellation-before-activation are implemented. The unchecked tasks below still require all their listed acceptance work; model management and the remaining production packs are not supplied by this Media preview.
 
 - [ ] Reconcile every shared contract and cardinality with actual actions: one-to-one, many-to-one, one-to-many and multiple terminal outputs. Keep container and codec claims separate; preserve legacy image CLI fields and versioned generic JSON.
 - [ ] Complete the engine/model installation UI: available vs installed vs incompatible, download/installed sizes, notices, explicit install, progress, cancellation/retry, activation, update, rollback and safe removal. Refresh capabilities safely while existing jobs keep their pinned runtime versions.
@@ -155,8 +159,24 @@ Keep [IMPLEMENTATION.md](../IMPLEMENTATION.md), [ROADMAP.md](ROADMAP.md), the ge
 
 Full document authoring, video timelines, guaranteed editable PDF-to-Word reconstruction, bitmap-subtitle OCR, DRM removal and App Store packaging retain their original deferred/out-of-scope status. Everything else listed above remains required.
 
+## Current execution ledger
+
+| Work | Status | Evidence / remaining gate |
+| --- | --- | --- |
+| Checkpoint 1 | verified | Real FFmpeg 8.1.1/8.1.2, signed XPC conversion/cancellation/lifecycle and actual network download; [evidence](FFMPEG_CHECKPOINT.md) |
+| Milestone 1 | in progress | Native pack lifecycle verified; contract audit, fault injection, restart/activation failures, large batches and physical/accessibility/platform acceptance remain |
+| Minimum macOS 13 / clean offline host qualification | blocked with evidence | Available host is macOS 26.5.1; Mach-O target audit passes 13.0 but is not execution. No macOS 13 or clean second Mac is available in this session. This blocks the release gate, not independent implementation |
+| Milestone 2 remaining work | not started | Baseline native PDF/images retained; qpdf and broader preservation/corpus work still required |
+| Milestone 3 remaining work | in progress | Initial real runtime exists; LAME/Opus/VP9, full codecs/tracks/subtitles/playback/corpus and platform delivery remain required |
+| Milestone 4 remaining work | not started | LibreOffice/Pandoc production packs, previews, interchange and security corpus remain required |
+| Milestone 5 remaining work | not started | Pinned archive runtime, RAR/EPUB workflows and Calibre pack remain required |
+| Milestone 6 remaining work | not started | Dedicated Finder extension, recipe entry-point parity, destination/watchers/folder removal qualification remain required |
+| Milestone 7 remaining work | not started | whisper.cpp/model delivery, transcript review and experimental scanned-table workflow remain required |
+
+Next concrete work: complete milestone 1's fault/activation/download failure matrix and responsiveness/entry-point qualification. Execute macOS 13 and clean offline checks on suitable hosts before releasing the candidate; then continue the remaining milestones in the stated order. Do not repeat checkpoint 1 as another fixture-only or planning-only cycle.
+
 ## First-session deliverables and handoff
 
-The next implementation session should begin with checkpoint 1 and aim to deliver a real signed FFmpeg pack executing through the app's XPC worker, with reproducible build configuration and evidence. Continue with milestone 1's install/download lifecycle; do not stop after producing an adapter, CLI-only fixture or new plan. If a concrete blocker prevents that proof, document exactly what failed and continue independent authorized work.
+Checkpoint 1 and the initial Media download/lifecycle implementation now have real signed-app evidence. Resume the unchecked milestone 1 gates, retaining these working packs and tests; do not replace them with an adapter, CLI-only fixture or new plan. If a concrete blocker prevents that proof, document exactly what failed and continue independent authorized work.
 
 At the end of each session, update the status ledger and give: commits/files changed, actual pack/artifact versions, tests and manual checks completed, unresolved failures, and the next concrete task. Keep the full scope visible until all required delivery and acceptance work is complete.

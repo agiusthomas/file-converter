@@ -10,7 +10,7 @@ public enum FileDigest {
         return digest.finalize().map { String(format:"%02x",$0) }.joined()
     }
 }
-public struct EnginePackManifest: Codable, Sendable {
+public struct EnginePackManifest: Codable, Sendable, Equatable {
     public var schemaVersion: Int
     public var id: String
     public var version: String
@@ -29,19 +29,33 @@ public struct InstalledEnginePack: Codable, Sendable, Identifiable {
     public var location: URL
     public var manifest: EnginePackManifest
 }
-public struct EngineDownload: Codable, Sendable {
+public struct EngineDownload: Codable, Sendable, Equatable, Identifiable {
     public var id: String
     public var version: String
     public var url: URL
     public var sha256: String
     public var downloadBytes: Int64
+    public var installedBytes: Int64?
+    public var minimumAppVersion: String?
+    public var minimumOSVersion: String?
+    public var architectures: [String]?
+    public var notice: String?
+    public var publisherTeam: String?
 }
 public enum EnginePacks {
-    public static let appVersion = "0.2.0"
+    public static let appVersion = "0.2.1"
     public static let knownIDs: Set<String> = ["media","documents","ebooks","transcription","webp","pdf"]
     public static var defaultRoot: URL {
         if let path = ProcessInfo.processInfo.environment["FILE_CONVERTER_ENGINE_DIRECTORY"] { return URL(fileURLWithPath:path,isDirectory:true) }
-        return FileManager.default.urls(for:.applicationSupportDirectory,in:.userDomainMask)[0].appendingPathComponent("File Converter/Engines",isDirectory:true)
+        return executableRoot.appendingPathComponent("Engines",isDirectory:true)
+    }
+    /// The sandbox statically allows reading/executing helpers in its own
+    /// Application Scripts directory, but does not allow the worker to write it.
+    /// The unsandboxed app installs only publisher-verified immutable packs here.
+    /// Tools still inherit the worker sandbox; NSUserScriptTask is never used.
+    public static var executableRoot: URL {
+        let service = (Bundle.main.object(forInfoDictionaryKey:"ConversionWorkerServiceName") as? String) ?? "io.local.file-converter.worker.production.v3"
+        return FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Scripts",isDirectory:true).appendingPathComponent(service,isDirectory:true).appendingPathComponent("File Converter",isDirectory:true)
     }
     public static var publisherCodeURL: URL {
         let bundle = Bundle.main.bundleURL
@@ -63,6 +77,8 @@ public enum EnginePacks {
         return team
     }
     public static func verify(_ bundle: URL, trustedTeam: String) throws -> InstalledEnginePack {
+        let rootValues = try bundle.resourceValues(forKeys:[.isDirectoryKey,.isSymbolicLinkKey])
+        guard rootValues.isDirectory == true, rootValues.isSymbolicLink != true else { throw OperationFailure.verification("Choose a regular engine bundle, not a symbolic link.") }
         guard try signingTeam(bundle) == trustedTeam else { throw OperationFailure.verification("The engine was not signed by this app's publisher.") }
         let manifestURL = bundle.appendingPathComponent("Contents/Resources/engine.json")
         guard (try manifestURL.resourceValues(forKeys:[.fileSizeKey]).fileSize ?? 0) < 1024 * 1024 else { throw OperationFailure.resourceLimit }
@@ -87,7 +103,13 @@ public enum EnginePacks {
             guard path.resolvingSymlinksInPath().path.hasPrefix(bundle.resolvingSymlinksInPath().path + "/"), values.isRegularFile == true, values.isSymbolicLink != true, try FileDigest.sha256(path) == hash else { throw OperationFailure.verification("An engine file failed its integrity check.") }
         }
         for relative in manifest.tools.values {
-            guard manifest.files[relative] != nil, FileManager.default.isExecutableFile(atPath:bundle.appendingPathComponent(relative).path), try signingTeam(bundle.appendingPathComponent(relative)) == trustedTeam else { throw OperationFailure.verification("An engine executable is missing, unsigned, or untrusted.") }
+            guard manifest.files[relative] != nil else { throw OperationFailure.verification("An engine executable is not covered by the manifest: \(relative)") }
+            let executable = bundle.appendingPathComponent(relative)
+            guard FileManager.default.isExecutableFile(atPath:executable.path) else {
+                let mode = (try? FileManager.default.attributesOfItem(atPath:executable.path)[.posixPermissions] as? NSNumber)?.intValue ?? 0
+                throw OperationFailure.verification("The worker cannot execute this engine (mode \(String(mode,radix:8))): \(executable.path)")
+            }
+            guard try signingTeam(bundle.appendingPathComponent(relative)) == trustedTeam else { throw OperationFailure.verification("An engine executable is not signed by the app publisher: \(relative)") }
         }
         for relative in manifest.licenses { guard manifest.files[relative] != nil else { throw OperationFailure.verification("Engine license information is missing.") } }
         for relative in (manifest.models ?? [:]).values { guard manifest.files[relative] != nil else { throw OperationFailure.verification("Transcription model integrity information is missing.") } }
@@ -111,46 +133,66 @@ public enum EnginePacks {
         let target = root.appendingPathComponent(pack.id + "-" + pack.manifest.version + ".bundle")
         let pointer = root.appendingPathComponent(pack.id + ".current")
         let previous = root.appendingPathComponent(pack.id + ".previous")
-        if FileManager.default.fileExists(atPath:target.path) {
-            let existing = try verify(target,trustedTeam:team)
-            guard existing.manifest.files == pack.manifest.files else { throw OperationFailure.verification("An engine update reused an existing version. Publish it under a new version.") }
-        } else { try FileManager.default.moveItem(at:next,to:target) }
-        if let old = try? Data(contentsOf:pointer) { try old.write(to:previous,options:.atomic) }
-        try Data(target.lastPathComponent.utf8).write(to:pointer,options:.atomic)
-        return try verify(target,trustedTeam:team)
+        return try withStoreLock(root) {
+            if FileManager.default.fileExists(atPath:target.path) {
+                let existing = try verify(target,trustedTeam:team)
+                guard existing.manifest == pack.manifest else { throw OperationFailure.verification("An engine update reused an existing version. Publish it under a new version.") }
+            } else { try FileManager.default.moveItem(at:next,to:target) }
+            try Task.checkCancellation()
+            // Retrying an already active installation must preserve its rollback.
+            if (try? String(contentsOf:pointer,encoding:.utf8)) == target.lastPathComponent { return try verify(target,trustedTeam:team) }
+            if let old = try? Data(contentsOf:pointer) { try old.write(to:previous,options:.atomic) }
+            try Data(target.lastPathComponent.utf8).write(to:pointer,options:.atomic)
+            try? FileManager.default.removeItem(at:root.appendingPathComponent(pack.id + ".remove"))
+            return try verify(target,trustedTeam:team)
+        }
     }
+    public static func importPack(_ bundle: URL, root: URL = defaultRoot) async throws -> InstalledEnginePack { try install(bundle,root:root) }
     public static func rollback(_ id: String, root: URL = defaultRoot) throws {
         guard knownIDs.contains(id) else { throw OperationFailure.invalidOptions("Unknown engine pack.") }
-        let previous = root.appendingPathComponent(id + ".previous"), pointer = root.appendingPathComponent(id + ".current")
-        let name = try String(contentsOf:previous,encoding:.utf8)
-        guard name == URL(fileURLWithPath:name).lastPathComponent else { throw OperationFailure.verification("Invalid previous engine path.") }
-        _ = try verify(root.appendingPathComponent(name),trustedTeam:signingTeam(publisherCodeURL))
-        let current = try Data(contentsOf:pointer)
-        try Data(name.utf8).write(to:pointer,options:.atomic); try current.write(to:previous,options:.atomic)
+        try withStoreLock(root) {
+            let previous = root.appendingPathComponent(id + ".previous"), pointer = root.appendingPathComponent(id + ".current")
+            let name = try String(contentsOf:previous,encoding:.utf8)
+            guard name == URL(fileURLWithPath:name).lastPathComponent else { throw OperationFailure.verification("Invalid previous engine path.") }
+            _ = try verify(root.appendingPathComponent(name),trustedTeam:signingTeam(publisherCodeURL))
+            let current = try Data(contentsOf:pointer)
+            try Data(name.utf8).write(to:pointer,options:.atomic); try current.write(to:previous,options:.atomic)
+        }
     }
     public static func deactivate(_ id: String, root: URL = defaultRoot) throws {
         guard knownIDs.contains(id) else { throw OperationFailure.invalidOptions("Unknown engine pack.") }
         // Versioned files stay immutable while existing jobs may still hold them.
         // Removing the active pointer affects only future app/CLI engine snapshots.
-        try FileManager.default.removeItem(at:root.appendingPathComponent(id + ".current"))
+        try withStoreLock(root) {
+            let pointer = root.appendingPathComponent(id + ".current")
+            if FileManager.default.fileExists(atPath:pointer.path) { try FileManager.default.removeItem(at:pointer) }
+        }
     }
-    public static func download(_ entry: EngineDownload, root: URL = defaultRoot) async throws -> InstalledEnginePack {
-        guard entry.url.scheme == "https", knownIDs.contains(entry.id), entry.downloadBytes > 0, entry.downloadBytes <= 4 * 1024 * 1024 * 1024 else { throw OperationFailure.invalidInput("Invalid engine download.") }
+    public static func download(_ entry: EngineDownload, root: URL = defaultRoot, progress: @escaping @Sendable (EngineDownloadProgress) -> Void = { _ in }) async throws -> InstalledEnginePack {
+        guard validDownload(entry) else { throw OperationFailure.invalidInput("Invalid engine download.") }
         // Entries must come from the catalog sealed inside the signed app, never an unsigned remote manifest.
-        let catalogURL = Bundle.main.url(forResource:"EngineCatalog",withExtension:"json")
-        let catalog = try catalogURL.map { try JSONDecoder().decode([EngineDownload].self,from:Data(contentsOf:$0)) } ?? []
-        guard catalog.contains(where: { $0.id == entry.id && $0.version == entry.version && $0.sha256 == entry.sha256 && $0.url == entry.url && $0.downloadBytes == entry.downloadBytes }) else { throw OperationFailure.verification("This download is not in the app's trusted catalog.") }
-        let (temporary,response) = try await URLSession.shared.download(from:entry.url)
+        guard try catalog().contains(entry) else { throw OperationFailure.verification("This download is not in the app's trusted catalog.") }
+        if let message = incompatibility(entry) { throw OperationFailure.verification(message) }
+        try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+        let capacity = try root.resourceValues(forKeys:[.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage
+        // Extraction and the verified installation copy can coexist. Do not
+        // rely on APFS clone behavior when reserving space for the peak.
+        let required = entry.downloadBytes + 2*(entry.installedBytes ?? entry.downloadBytes*8) + 16*1024*1024
+        if let capacity, capacity < required { throw OperationFailure.process("There is not enough free space to download and install this engine.") }
+        progress(.init(.downloading,totalBytes:entry.downloadBytes))
+        let temporary = try await BoundedEngineDownload(entry:entry,progress:progress).run()
         defer { try? FileManager.default.removeItem(at:temporary) }
-        guard response.url?.scheme == "https", (response as? HTTPURLResponse)?.statusCode == 200,
-              Int64(try temporary.resourceValues(forKeys:[.fileSizeKey]).fileSize ?? 0) == entry.downloadBytes,
+        progress(.init(.verifying,receivedBytes:entry.downloadBytes,totalBytes:entry.downloadBytes))
+        guard Int64(try temporary.resourceValues(forKeys:[.fileSizeKey]).fileSize ?? 0) == entry.downloadBytes,
               try FileDigest.sha256(temporary) == entry.sha256 else { throw OperationFailure.verification("The engine download failed verification.") }
         let stage = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString,isDirectory:true)
         defer { try? FileManager.default.removeItem(at:stage) }
+        progress(.init(.extracting))
         _ = try ArchiveEngine.extract(temporary,to:stage)
         let children = try FileManager.default.contentsOfDirectory(at:stage,includingPropertiesForKeys:nil)
         guard children.count == 1, children[0].pathExtension == "bundle" else { throw OperationFailure.verification("Engine download has an invalid layout.") }
-        // Archive extraction removes executable permissions; restore only declared executables after the sealed bundle is verified.
+        // After archive bytes match the sealed catalog, restore declared tool
+        // permissions. Full bundle/tool signatures are checked before activation.
         let downloadedManifest = children[0].appendingPathComponent("Contents/Resources/engine.json")
         guard (try downloadedManifest.resourceValues(forKeys:[.fileSizeKey]).fileSize ?? 0) < 1024*1024 else { throw OperationFailure.resourceLimit }
         let manifest = try JSONDecoder().decode(EnginePackManifest.self,from:Data(contentsOf:downloadedManifest))
@@ -160,6 +202,7 @@ public enum EnginePacks {
         // signature seals this manifest, so it cannot hash itself in the manifest.
         let anchor = children[0].appendingPathComponent("Contents/MacOS/pack-anchor")
         if (try? anchor.resourceValues(forKeys:[.isRegularFileKey]).isRegularFile) == true { try FileManager.default.setAttributes([.posixPermissions:0o755],ofItemAtPath:anchor.path) }
+        try Task.checkCancellation(); progress(.init(.installing))
         return try install(children[0],root:root)
     }
 }

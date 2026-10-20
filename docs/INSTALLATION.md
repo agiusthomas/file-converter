@@ -30,3 +30,11 @@ To remove the app, quit it and move **File Converter.app** from Applications to 
 ## Verify a download (optional)
 
 The release includes `SHA256SUMS.txt`. After downloading the DMG and checksum file into the same folder, compare the DMG's SHA-256 checksum with the matching line in that file. The ZIP is an alternative app download: unzip it, move the app to Applications, and follow the same first-use steps.
+
+## Engine preview in the source candidate
+
+The published 0.2.0 app above retains its original empty engine catalog. The current 0.2.1 source candidate (not yet an app release) includes a [Media 0.1.2 qualification preview](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2). It requires the publisher's Developer ID signed candidate; an unsigned or differently signed source build cannot install the publisher's executable packs.
+
+In that candidate, open **Engines**, review compatibility/sizes/notices, then choose **Download and install**. Installation is explicit and cancellable; a retry keeps the previous active version until verification/activation succeeds. Updates expose a rollback button. Engine changes activate when current queued work finishes, while running jobs retain their runtime versions. **Remove pack** disables future activation and reclaims files after live pins release. Use the license/source disclosure to inspect the complete runtime.
+
+The initial runtime supports the qualified FLAC and H.264/AAC paths; complete MP3/Opus/VP9 dependencies and advanced Media workflows remain required. Minimum macOS 13 execution and clean offline installation are unverified. Documents, Ebooks, Transcription and PDF structure packs remain unpublished. See [exact qualification and limitations](FFMPEG_CHECKPOINT.md). Before removing a candidate app, remove optional packs from Engines if you also want their cached runtime files reclaimed; generated user outputs are unaffected.

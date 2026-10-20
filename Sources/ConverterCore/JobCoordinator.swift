@@ -7,12 +7,33 @@ public actor JobCoordinator {
     }
     private let transport: any WorkerTransport
     private let journal: URL
-    private let packs: [InstalledEnginePack]
+    private var packs: [InstalledEnginePack]
+    private var runtimeLease: EnginePackLease?
+    private var leaseFailure: String?
     private var active = false
     private var enginePins: [String:String] { Dictionary(uniqueKeysWithValues:packs.map { ($0.id,$0.manifest.version) }) }
     private var submitted: [UUID:JobRecord] = [:]
     private var waiters: [(UUID,CheckedContinuation<Void,Error>)] = []
-    public init(transport: any WorkerTransport, journal: URL = defaultJournal, packs: [InstalledEnginePack] = []) { self.transport = transport; self.journal = journal; self.packs = packs }
+    public init(transport: any WorkerTransport, journal: URL = defaultJournal, packs: [InstalledEnginePack] = []) {
+        self.transport = transport; self.journal = journal; self.packs = packs
+        do { runtimeLease = try EnginePackLease(packs:packs) } catch { leaseFailure = error.localizedDescription }
+    }
+    /// Keep the same actor (and its single-worker queue) across capability changes.
+    /// Existing queued/running work retains its old immutable runtime snapshot.
+    public func refreshPacks(_ packs: [InstalledEnginePack]) throws -> Bool {
+        guard !active, waiters.isEmpty, submitted.isEmpty else { return false }
+        let next = try EnginePackLease(packs:packs)
+        self.packs = packs; runtimeLease = next; leaseFailure = nil
+        return true
+    }
+    private func performWorker(_ envelope: WorkerEnvelope) async throws -> WorkerResponse {
+        if let leaseFailure { throw OperationFailure.process("Cannot pin the engine runtime: " + leaseFailure) }
+        // Inspection can overlap an idle capability refresh. Its own lease keeps
+        // the snapshot alive until the response, even after the actor refreshes.
+        let lease = try EnginePackLease(packs:envelope.packs)
+        defer { withExtendedLifetime(lease) {} }
+        return try await transport.perform(envelope)
+    }
     public func inspect(_ urls: [URL]) async throws -> [AssetDescriptor] {
         guard !urls.isEmpty, urls.count <= 1000 else { throw OperationFailure.resourceLimit }
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("inspection-\(UUID().uuidString)",isDirectory:true)
@@ -30,7 +51,7 @@ public actor JobCoordinator {
             if values.isDirectory == true { try FileManager.default.createDirectory(at:input,withIntermediateDirectories:false) } else { try InputSnapshot.copy(url,to:input) }
             staged.append(input)
         }
-        let result = try await transport.perform(WorkerEnvelope(inputs:staged,packs:packs))
+        let result = try await performWorker(WorkerEnvelope(inputs:staged,packs:packs))
         if let error = result.error { throw OperationFailure.invalidInput(error) }
         guard let assets = result.assets, assets.count == urls.count else { throw OperationFailure.verification("File inspection returned an incomplete result.") }
         return zip(assets,urls).map { asset,url in var descriptor = AssetDescriptor(source:url,family:asset.family,format:asset.format,byteCount:asset.byteCount); descriptor.width = asset.width; descriptor.height = asset.height; descriptor.pageCount = asset.pageCount; descriptor.duration = asset.duration; descriptor.tracks = asset.tracks; descriptor.notices = asset.notices; descriptor.members = asset.members; descriptor.supportedProfiles = asset.supportedProfiles; descriptor.metadata = asset.metadata; descriptor.nativeDecodable = asset.nativeDecodable; return descriptor }
@@ -138,7 +159,7 @@ public actor JobCoordinator {
                 staged.inputs.append(target); mapping[target.standardizedFileURL.path] = source
             }
             record.state = .running; try persist(record); progress?(.running)
-            let response = try await transport.perform(WorkerEnvelope(inputs:staged.inputs,request:staged,directory:outputDirectory,packs:packs))
+            let response = try await performWorker(WorkerEnvelope(inputs:staged.inputs,request:staged,directory:outputDirectory,packs:packs))
             if let error = response.error { throw OperationFailure.process(error) }
             guard let manifest = response.manifest, manifest.jobID == request.id, !manifest.outputs.isEmpty else { throw OperationFailure.verification("The worker returned an invalid output manifest.") }
             record.state = .validating; try persist(record); progress?(.validating)
@@ -252,7 +273,7 @@ public actor JobCoordinator {
             let child = inputs.appendingPathComponent("\(index)",isDirectory:true); try FileManager.default.createDirectory(at:child,withIntermediateDirectories:false)
             let staged = child.appendingPathComponent(url.lastPathComponent); try InputSnapshot.copy(url,to:staged); copy.inputs.append(staged); mapping[staged.standardizedFileURL.path] = url
         }
-        let response = try await transport.perform(WorkerEnvelope(inputs:copy.inputs,request:copy,directory:outputs,packs:packs))
+        let response = try await performWorker(WorkerEnvelope(inputs:copy.inputs,request:copy,directory:outputs,packs:packs))
         if let error = response.error { throw OperationFailure.process(error) }
         guard var manifest = response.manifest, manifest.jobID == request.id, !manifest.outputs.isEmpty else { throw OperationFailure.verification("Preview did not produce a valid result.") }
         manifest.outputs = try checkedOutputs(manifest,directory:outputs,mapping:mapping)

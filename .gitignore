@@ -2,6 +2,7 @@
 .cache/
 build/
 .DS_Store
+__pycache__/
 *.xcuserstate
 .swiftpm/xcode/xcuserdata/
 

@@ -1,8 +1,9 @@
 {
   "id": "media",
   "version": "1.0.0",
-  "minimumAppVersion": "0.2.0",
+  "minimumAppVersion": "0.2.1",
   "minimumOSVersion": "13.0",
+  "sandboxInheritance": true,
   "tools": {"ffmpeg": "bin/ffmpeg", "ffprobe": "bin/ffprobe"},
   "licenses": ["notices/LICENSES.txt", "notices/BUILD-AND-SOURCE.txt"],
   "engineVersions": {"ffmpeg": "REPLACE_WITH_PINNED_VERSION", "configuration": "REPLACE_WITH_EXACT_BUILD_FLAGS_AND_LICENSE_CONFIGURATION"}

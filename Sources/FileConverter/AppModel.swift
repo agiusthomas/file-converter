@@ -32,6 +32,16 @@ enum WorkspacePage: String, CaseIterable { case convert = "Convert", activity = 
     private var previewDirectory: URL?
     @Published var recipes: [Recipe] = []
     @Published var packs: [InstalledEnginePack]
+    @Published var engineCatalog: [EngineDownload] = []
+    @Published var storedPacks: [InstalledEnginePack] = []
+    @Published var engineRollbackVersions: [String:String] = [:]
+    @Published var engineRemovals: Set<String> = []
+    @Published var engineBusyID: String?
+    @Published var engineProgress: EngineDownloadProgress?
+    @Published var engineFailure: String?
+    private var engineTask: Task<Void,Never>?
+    private var engineRemovalTask: Task<Void,Never>?
+    private var engineRefreshPending = false
     @Published var watchRules: [WatchRule] = []
     @Published var shelf: [URL] = []
     @Published var relativeSourceRoot: URL?
@@ -68,7 +78,7 @@ enum WorkspacePage: String, CaseIterable { case convert = "Convert", activity = 
         if let data = UserDefaults.standard.data(forKey:"watchRules"), let rules = try? JSONDecoder().decode([WatchRule].self,from:data) { watchRules = rules }
         let shelfBookmarks = UserDefaults.standard.array(forKey:"shelfBookmarks") as? [Data] ?? []
         shelf = shelfBookmarks.compactMap { data in var stale = false; return try? URL(resolvingBookmarkData:data,options:.withSecurityScope,relativeTo:nil,bookmarkDataIsStale:&stale) }
-        Task { try? await Task.detached { try TransientWorkspace.removeExpired() }.value; await refreshHistory(recover:true); restartWatchers() }
+        Task { try? await Task.detached { try TransientWorkspace.removeExpired() }.value; await refreshHistory(recover:true); await refreshEngineLibrary(); restartWatchers() }
     }
     static var starterRecipes: [Recipe] {
         var screenshot = OperationOptions(); screenshot.maximumDimension = 1920; screenshot.preserveMetadata = false; screenshot.targetBytes = 2*1024*1024; screenshot.allowDownscale = true
@@ -171,6 +181,7 @@ enum WorkspacePage: String, CaseIterable { case convert = "Convert", activity = 
             }
             for request in pending { try? await coordinator.cancelSubmitted(request.id); if let index = jobs.firstIndex(where: { $0.id == request.id }) { jobs[index].state = .cancelled } }
             pending = []; await refreshHistory(); isProcessing = false; isCancelling = false; queueTask = nil
+            if engineRefreshPending { await refreshEngineLibrary() }
         }
     }
     func cancel() { isCancelling = true; queueTask?.cancel(); recipeTask?.cancel() }
@@ -232,7 +243,7 @@ enum WorkspacePage: String, CaseIterable { case convert = "Convert", activity = 
     func restartWatchers() {
         do { UserDefaults.standard.set(try JSONEncoder().encode(watchRules),forKey:"watchRules") } catch { message = error.localizedDescription }
         let rules = watchRules
-        Task { await watcher.start(rules) { [weak self] event in Task { @MainActor in self?.message = event; await self?.refreshHistory() } } }
+        Task { await watcher.start(rules) { [weak self] event in Task { @MainActor in self?.message = event; await self?.refreshHistory(); if self?.engineRefreshPending == true { await self?.refreshEngineLibrary() } } } }
     }
     func addWatchRule(_ recipe: Recipe) {
         let panel = NSOpenPanel(); panel.canChooseFiles = false; panel.canChooseDirectories = true; panel.prompt = "Watch folder"
@@ -256,13 +267,86 @@ enum WorkspacePage: String, CaseIterable { case convert = "Convert", activity = 
     func runRecipe(_ recipe: Recipe) { runRecipe(recipe,inputs:sources,destination:destination) }
     private func runRecipe(_ recipe: Recipe, inputs: [URL], destination: URL?, skippingExports: Set<Int> = [], completedOutputs: [OutputArtifact] = []) {
         guard !inputs.isEmpty, recipeTask == nil else { return }; cancelPreview(); thumbnailTask?.cancel(); isLoadingPages = false; isProcessing = true
-        recipeTask = Task { do { _ = try await coordinator.run(recipe,inputs:inputs,destination:destination,skippingExports:skippingExports,completedOutputs:completedOutputs) } catch { message = error.localizedDescription }; await refreshHistory(); recipeTask = nil; isProcessing = queueTask != nil; isCancelling = false }
+        recipeTask = Task { do { _ = try await coordinator.run(recipe,inputs:inputs,destination:destination,skippingExports:skippingExports,completedOutputs:completedOutputs) } catch { message = error.localizedDescription }; await refreshHistory(); recipeTask = nil; isProcessing = queueTask != nil; isCancelling = false; if engineRefreshPending { await refreshEngineLibrary() } }
     }
     func importPack() {
-        guard !isProcessing else { message = "Finish active jobs before changing engines."; return }
+        guard engineTask == nil else { return }
         let panel = NSOpenPanel(); panel.canChooseDirectories = true; panel.canChooseFiles = false; panel.treatsFilePackagesAsDirectories = true; panel.prompt = "Install pack"
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        Task { do { let pack = try await Task.detached { try EnginePacks.install(url) }.value; message = "\(pack.id.capitalized) installed. Restart File Converter to activate the verified engine snapshot." } catch { message = error.localizedDescription } }
+        changeEngine("local") { _ = try await EnginePacks.importPack(url) }
+    }
+    func refreshEngineLibrary() async {
+        do {
+            let result = try await Task.detached {
+                _ = try EnginePacks.collectRemovals()
+                let catalog = try EnginePacks.catalog(), installed = EnginePacks.installed()
+                let rollback = Dictionary(uniqueKeysWithValues:installed.compactMap { pack in EnginePacks.rollbackVersion(pack.id).map { (pack.id,$0) } })
+                return (catalog,installed,rollback)
+            }.value
+            engineCatalog = result.0; storedPacks = result.1; engineRollbackVersions = result.2
+            if !isProcessing, pending.isEmpty, try await coordinator.refreshPacks(result.1) {
+                let changed = Dictionary(uniqueKeysWithValues:packs.map { ($0.id,$0.manifest.version) }) != Dictionary(uniqueKeysWithValues:result.1.map { ($0.id,$0.manifest.version) })
+                packs = result.1; engineRefreshPending = false
+                if changed { refreshEngineAssets() }
+            } else { engineRefreshPending = true }
+            engineRemovals = try await Task.detached { try EnginePacks.collectRemovals() }.value
+            finishDeferredEngineRemovals()
+        } catch { engineFailure = error.localizedDescription }
+    }
+    private func finishDeferredEngineRemovals() {
+        guard engineRemovalTask == nil, !engineRemovals.isEmpty else { return }
+        engineRemovalTask = Task {
+            defer { engineRemovalTask = nil }
+            while !Task.isCancelled, !engineRemovals.isEmpty {
+                do {
+                    try await Task.sleep(nanoseconds:1_000_000_000)
+                    engineRemovals = try await Task.detached { try EnginePacks.collectRemovals() }.value
+                } catch is CancellationError { return }
+                catch { engineFailure = error.localizedDescription; return }
+            }
+        }
+    }
+    private func refreshEngineAssets() {
+        guard !sources.isEmpty else { return }
+        inspectionTask?.cancel(); let id = UUID(); selectionID = id
+        let selection = sources; isInspecting = true
+        inspectionTask = Task {
+            do {
+                let inspected = try await coordinator.inspect(selection)
+                guard selectionID == id, !Task.isCancelled else { return }
+                assets = inspected
+                if !actions.contains(where:{$0.id == selectedAction && $0.available}), let first = actions.first(where:\.available) { selectAction(first.id) }
+                else if !profiles.contains(where:{$0.id == selectedProfileID}) { selectedProfileID = profiles.first?.id ?? "" }
+            } catch { if selectionID == id, !Task.isCancelled { message = error.localizedDescription } }
+            if selectionID == id { isInspecting = false }
+        }
+    }
+    private func changeEngine(_ id: String, operation: @escaping @Sendable () async throws -> Void) {
+        guard engineTask == nil else { return }
+        engineBusyID = id; engineFailure = nil; engineProgress = .init(.installing)
+        engineTask = Task {
+            do {
+                try await operation(); await refreshEngineLibrary()
+                message = engineRefreshPending ? "Engine changes will activate when the current queue finishes. Existing jobs keep their pinned runtime." : "Engine library updated."
+            } catch is CancellationError { message = "Installation cancelled. The previous active engine was kept." }
+            catch { engineFailure = error.localizedDescription }
+            engineBusyID = nil; engineProgress = nil; engineTask = nil
+        }
+    }
+    func downloadEngine(_ entry: EngineDownload) {
+        let model = self
+        changeEngine(entry.id) {
+            _ = try await EnginePacks.download(entry) { progress in Task { @MainActor in model.engineProgress = progress } }
+        }
+    }
+    func cancelEngineInstall() { engineTask?.cancel() }
+    func rollbackEngine(_ id: String) {
+        guard !isProcessing else { return }
+        changeEngine(id) { try await Task.detached { try EnginePacks.rollback(id) }.value }
+    }
+    func removeEngine(_ id: String) {
+        guard !isProcessing else { return }
+        changeEngine(id) { try await Task.detached { try EnginePacks.requestRemoval(id) }.value }
     }
 }
 @MainActor final class FolderGrants {

@@ -16,7 +16,9 @@ public struct WorkerEnvelope: Codable, Sendable {
         self.id = request?.id ?? UUID(); self.inputs = inputs; self.request = request; self.directory = directory; self.packs = packs
         // Cross-process bookmarks use implicit security scope. Persistent app-scoped
         // bookmarks cannot grant access to a differently identified XPC service.
-        bookmarks = (inputs + (directory.map { [$0] } ?? []) + packs.map(\.location)).compactMap { try? $0.bookmarkData(options:[],includingResourceValuesForKeys:nil,relativeTo:nil) }
+        // Engine code has static read/execute access in the worker's Application
+        // Scripts directory. Never give the worker a write bookmark to that code.
+        bookmarks = (inputs + (directory.map { [$0] } ?? [])).compactMap { try? $0.bookmarkData(options:[],includingResourceValuesForKeys:nil,relativeTo:nil) }
     }
 }
 public struct WorkerResponse: Codable, Sendable {
@@ -54,18 +56,20 @@ public final class XPCWorkerTransport: WorkerTransport, @unchecked Sendable {
                 guard let proxy = handle.connection.remoteObjectProxyWithErrorHandler({ completion.finish(.failure($0)) }) as? ConversionWorkerProtocol else { completion.finish(.failure(OperationFailure.process("Cannot connect to the conversion worker."))); return }
                 do {
                     let data = try JSONEncoder().encode(envelope)
-                    proxy.perform(data) { data,error in
+                    let sent = handle.send(using:proxy) { proxy.perform(data) { data,error in
                         defer { handle.connection.invalidate() }
+                        if handle.isCancelled { completion.finish(.failure(CancellationError())); return }
                         if let error { completion.finish(.failure(OperationFailure.process(error))); return }
                         guard let data else { completion.finish(.failure(OperationFailure.process("The worker returned no result."))); return }
                         do { completion.finish(.success(try JSONDecoder().decode(WorkerResponse.self,from:data))) } catch { completion.finish(.failure(error)) }
-                    }
+                    } }
+                    if !sent { completion.finish(.failure(CancellationError())); handle.connection.invalidate() }
                 } catch { handle.connection.invalidate(); completion.finish(.failure(error)) }
             }
         },onCancel: {
-            // Each connection owns its service tasks; invalidation cancels all of
-            // them, including when cancellation races initial connection setup.
-            completion.finish(.failure(CancellationError())); handle.connection.invalidate()
+            // Keep the connection and runtime pin until the worker acknowledges
+            // cancellation after terminating its child and cleaning its stage.
+            handle.cancel(envelope.id.uuidString)
         })
     }
 }
@@ -73,7 +77,21 @@ public final class XPCWorkerTransport: WorkerTransport, @unchecked Sendable {
 // while bridging callback completion and task cancellation.
 private final class XPCConnectionHandle: @unchecked Sendable {
     let connection: NSXPCConnection
+    private let lock = NSLock()
+    private var proxy: ConversionWorkerProtocol?
+    private var cancelled = false
     init(serviceName: String) { connection = NSXPCConnection(serviceName:serviceName) }
+    var isCancelled: Bool { lock.lock(); defer { lock.unlock() }; return cancelled }
+    func send(using proxy: ConversionWorkerProtocol, _ operation: () -> Void) -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        guard !cancelled else { return false }
+        self.proxy = proxy; operation(); return true
+    }
+    func cancel(_ id: String) {
+        lock.lock(); cancelled = true; let proxy = proxy; lock.unlock()
+        // send() orders perform before cancel, including setup/cancel races.
+        proxy?.cancel(id)
+    }
 }
 private final class XPCCompletion: @unchecked Sendable {
     private let lock = NSLock()
@@ -126,15 +144,63 @@ public enum WorkerExecutor {
             if let url = try? URL(resolvingBookmarkData:data,options:.withoutUI,relativeTo:nil,bookmarkDataIsStale:&stale), !stale { _ = url.startAccessingSecurityScopedResource(); grants.append(url) }
         }
         defer { grants.forEach { $0.stopAccessingSecurityScopedResource() } }
-        var packs: [InstalledEnginePack] = []
-        if !envelope.packs.isEmpty {
-            let team = try EnginePacks.signingTeam(EnginePacks.publisherCodeURL)
-            packs = try envelope.packs.map { try EnginePacks.verify($0.location,trustedTeam:team) }
-        }
-        let engine = NativeEngine(packs:packs)
+        if !envelope.packs.isEmpty { return try await performWithLocalRuntime(envelope) }
+        let engine = NativeEngine()
         if let request = envelope.request, let directory = envelope.directory {
             return WorkerResponse(manifest:try await engine.execute(request,in:directory))
         }
         return WorkerResponse(assets:try await engine.inspect(envelope.inputs))
+    }
+    private static func performWithLocalRuntime(_ envelope: WorkerEnvelope) async throws -> WorkerResponse {
+        // Dynamic input/output bookmark grants are not inherited by exec'd
+        // tools. Data lives in the worker's container; verified code lives in
+        // the worker's statically executable, read-only Application Scripts
+        // directory. Neither execution nor library validation is relaxed.
+        let container = FileManager.default.urls(for:.applicationSupportDirectory,in:.userDomainMask)[0].appendingPathComponent("Engine Workspaces",isDirectory:true)
+        try FileManager.default.createDirectory(at:container,withIntermediateDirectories:true,attributes:[.posixPermissions:0o700])
+        let local = container.appendingPathComponent("engine-job-\(envelope.id.uuidString)-\(UUID().uuidString)",isDirectory:true)
+        try FileManager.default.createDirectory(at:local,withIntermediateDirectories:false,attributes:[.posixPermissions:0o700])
+        defer { try? FileManager.default.removeItem(at:local) }
+        let team = try EnginePacks.signingTeam(EnginePacks.publisherCodeURL)
+        var packs: [InstalledEnginePack] = []
+        for pack in envelope.packs {
+            try Task.checkCancellation()
+            packs.append(try EnginePacks.verify(pack.location,trustedTeam:team))
+        }
+        var inputs: [URL] = [], sourceMapping: [String:URL] = [:]
+        for (index,source) in envelope.inputs.enumerated() {
+            let folder = local.appendingPathComponent("input-\(index)",isDirectory:true)
+            try FileManager.default.createDirectory(at:folder,withIntermediateDirectories:false)
+            let target = folder.appendingPathComponent(source.lastPathComponent)
+            try InputSnapshot.copy(source,to:target)
+            inputs.append(target); sourceMapping[target.standardizedFileURL.path] = source
+        }
+        let engine = NativeEngine(packs:packs)
+        if var request = envelope.request, let directory = envelope.directory {
+            guard request.inputs == envelope.inputs else { throw OperationFailure.verification("Worker input snapshot mismatch.") }
+            let output = local.appendingPathComponent("outputs",isDirectory:true)
+            request.inputs = inputs; request.destination = output
+            var manifest = try await engine.execute(request,in:output)
+            for index in manifest.outputs.indices {
+                try Task.checkCancellation()
+                let source = manifest.outputs[index].url
+                _ = try PathPolicy.relativePath(of:source,under:output)
+                let target = directory.appendingPathComponent(source.lastPathComponent)
+                try InputSnapshot.copy(source,to:target)
+                manifest.outputs[index].url = target
+                manifest.outputs[index].sources = try manifest.outputs[index].sources.map { url in
+                    guard let original = sourceMapping[url.standardizedFileURL.path] else { throw OperationFailure.verification("Worker output has unknown source lineage.") }
+                    return original
+                }
+            }
+            return WorkerResponse(manifest:manifest)
+        }
+        var assets = try await engine.inspect(inputs)
+        for index in assets.indices {
+            let asset = assets[index]
+            guard let original = sourceMapping[asset.source.standardizedFileURL.path] else { throw OperationFailure.verification("Worker inspected an unknown snapshot.") }
+            assets[index] = asset.relocated(to:original)
+        }
+        return WorkerResponse(assets:assets)
     }
 }

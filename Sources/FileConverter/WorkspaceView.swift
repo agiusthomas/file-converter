@@ -306,17 +306,7 @@ struct WorkspaceView: View {
             ForEach(model.shelf,id:\.self) { url in HStack { Text(url.lastPathComponent).font(.headline); Spacer(); Button("Copy") { model.copy(url) }; Button("Show in Finder") { model.reveal(url) }; Button("Remove from shelf") { model.shelf.removeAll { $0 == url }; model.persistShelf() } }.padding(16).modifier(GlacierCard()).onDrag { NSItemProvider(contentsOf:url) ?? NSItemProvider() } }
         }
     }
-    private var engines: some View {
-        VStack(alignment:.leading,spacing:18) {
-            Text("More possibilities. Still local.").font(.system(size:28,weight:.semibold,design:.rounded))
-            Text("Native images, PDF, OCR, media, text, subtitles, and system archive tools are included. Heavier engines are optional.").font(.callout).foregroundStyle(.secondary)
-            ForEach([("media","Media","More codecs, advanced filters, and loudness normalization"),("documents","Documents","Office, presentations, spreadsheets, and rich Markdown"),("ebooks","Ebooks","Additional ebook formats through Calibre"),("transcription","Transcription","Offline audio transcription with downloaded models")],id:\.0) { id,title,description in
-                HStack { Image(systemName:"shippingbox").font(.title2).foregroundStyle(Theme.accent); VStack(alignment:.leading,spacing:6) { Text(title).font(.headline); Text(description).font(.caption).foregroundStyle(.secondary) }; Spacer(); Text(model.packs.first(where:{$0.id == id}).map { "Installed · \($0.manifest.version)" } ?? "Not installed").font(.caption) }.padding(18).modifier(GlacierCard())
-            }
-            Text("Signed downloadable packs have not been published for this development build. Installed tools from other apps are not silently imported.").font(.caption).foregroundStyle(.secondary)
-            Button("Install a signed engine pack…") { model.importPack() }.disabled(model.isProcessing)
-        }
-    }
+    private var engines: some View { EngineLibraryView(model:model) }
     private var settings: some View {
         VStack(alignment:.leading,spacing:22) {
             Text("Make it yours.").font(.system(size:28,weight:.semibold,design:.rounded))

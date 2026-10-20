@@ -30,4 +30,4 @@ Archive engine: libarchive 3.7.4.
 | `ebook.convert` | ebook, document, text | `epub`, `azw3`, `mobi`, `txt` | Requires ebooks pack |
 | `transcribe` | audio, video | `txt`, `srt`, `vtt` | Requires transcription pack |
 
-Optional adapters are development implementations until signed packs and their release corpora pass. See [implementation status](../IMPLEMENTATION.md) for validation and outstanding gates.
+Media 0.1.2 is a published FFmpeg qualification preview for the signed 0.2.1 candidate, with FLAC and H.264/AAC proof; this table was generated without an active optional pack. Its full codec/workflow/platform corpus and the other production packs remain required. See [runtime evidence](FFMPEG_CHECKPOINT.md) and [implementation status](../IMPLEMENTATION.md).

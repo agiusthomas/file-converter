@@ -3,7 +3,7 @@ import Foundation
 public enum FileFamily: String, Codable, CaseIterable, Sendable { case image, pdf, audio, video, document, spreadsheet, presentation, text, subtitle, archive, ebook, unknown }
 public struct AssetDescriptor: Codable, Sendable, Identifiable {
     public var id: URL { source }
-    public let source: URL
+    public private(set) var source: URL
     public var family: FileFamily
     public var format: String
     public var byteCount: Int64
@@ -20,6 +20,7 @@ public struct AssetDescriptor: Codable, Sendable, Identifiable {
     public init(source: URL, family: FileFamily, format: String, byteCount: Int64) {
         self.source = source; self.family = family; self.format = format; self.byteCount = byteCount
     }
+    public func relocated(to source: URL) -> Self { var result = self; result.source = source; return result }
 }
 public enum ActionID: String, Codable, CaseIterable, Sendable {
     case imageConvert = "image.convert", imagesToPDF = "image.combine-pdf"

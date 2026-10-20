@@ -8,7 +8,9 @@ This tracks the approved seven-release expansion. The app remains a local macOS 
 
 Implemented: shared asset/action/request/manifest/adapter/coordinator/recipe contracts; legacy image compatibility; Xcode app and sandboxed XPC worker; clone/copy snapshots; persistent jobs and pending queue; cancellation; explicit recovery/retry; exclusive manifest publication; content inspection; folder grants; disk-space preflight; configurable modifier and login launch.
 
-Before release: prove sandboxed third-party execution with a real Developer ID (signed-pack installation/update/rollback passes an owned acceptance fixture); worker/app termination and disk-full fault injection; memory benchmarks; physical Finder drags across screens, Spaces, edges and modifier changes; clean installation and macOS 13 tests. Strengthen progress with engine-level fractions where appropriate. Do not add parallel conversion workers until benchmarks justify them.
+Verified on the current Mac: independently built FFmpeg packs execute through the signed sandboxed XPC app; real download interruption/retry, update/rollback, observed child cancellation and pinned removal/reclamation pass. Native download/install/update/rollback/removal and a downloaded-pack conversion pass. See [exact evidence](FFMPEG_CHECKPOINT.md).
+
+Before release: worker/app termination and disk-full fault injection; memory benchmarks; physical Finder drags across screens, Spaces, edges and modifier changes; clean installation and macOS 13 tests. Strengthen progress with engine-level fractions where appropriate. Do not add parallel conversion workers until benchmarks justify them.
 
 ## 2. PDF, images and sharing
 
@@ -20,7 +22,7 @@ Remaining: pinned qpdf structural operations/optimization; broader encrypted/sig
 
 Implemented: native compatible exports, trim/speed/mute/resize/crop/rotate/matching joins/audio extraction/frame export; FFmpeg adapter with actual codec/muxer probing, primary stream-copy checks, advanced filters/normalization/GIF/size targets; native SRT/VTT conversion.
 
-Remaining: signed pinned Media pack and license configuration, user-selectable tracks, text-subtitle extraction and selectable/burned-in subtitles, waveforms/playback trim UI, media metadata verification, HDR/alpha handling, variable-frame-rate/timestamp/synchronization and cancellation corpus. Bitmap-subtitle OCR stays later work.
+Initial Media 0.1.2 is a published FFmpeg qualification preview with a verified LGPL configuration and full source; it is not the complete Media pack. Remaining: pinned LAME/libopus/libvpx dependencies and the full runtime/corpus/platform delivery gate, user-selectable tracks, text-subtitle extraction and selectable/burned-in subtitles, waveforms/playback trim UI, media metadata verification, HDR/alpha handling, variable-frame-rate/timestamp/synchronization and cancellation corpus. Bitmap-subtitle OCR stays later work.
 
 ## 4. Documents, spreadsheets and text
 

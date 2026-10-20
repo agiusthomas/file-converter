@@ -1,0 +1,176 @@
+{
+  "additionalVerifiedRun": {
+    "cancellation": true,
+    "deactivatedPinnedRuntimeUsable": true,
+    "fixtureRoot": "/private/tmp/file-converter-media-final-09",
+    "interruptedDownloadBytes": 1369,
+    "interruptedDownloadPreservedRuntime": true,
+    "originalsUnchanged": true,
+    "passed": true,
+    "reinstallPreservedRollback": true,
+    "removalDeferredForPin": true,
+    "removalReclaimedAfterRelease": true,
+    "rollback": true,
+    "tamperRejected": true
+  },
+  "app": {
+    "build": "3",
+    "publisherTeam": "QJ75C25V8L",
+    "released": false,
+    "transport": "XPCWorkerTransport",
+    "version": "0.2.1"
+  },
+  "date": "2026-10-20",
+  "fixtureHashes": {
+    "long-picture.mp4": "78e27cf9d387b74fbc340a0fa4926dbbf0aa8de3642401a73fe18e809eaf6f41",
+    "picture.mp4": "d1f256ed40f093e2d5ba5331d1cc5b58e44e18d75782d60e65d35abd2cb39f1a",
+    "tone.wav": "1e04282d5cf9a27201b1f3d2c0351d9fac892566b41a5c76712b1851c7d17640"
+  },
+  "frozenBuildSignedAppRun": {
+    "CDHash": "3a6ab6b66659f3139e4db768b75c46feed847515",
+    "cancellation": true,
+    "childTerminated": true,
+    "deactivatedPinnedRuntimeUsable": true,
+    "fixtureRoot": "/private/tmp/file-converter-media-verified-11",
+    "independentDecodePassed": true,
+    "interruptedDownloadBytes": 7734,
+    "interruptedDownloadPreservedRuntime": true,
+    "originalsUnchanged": true,
+    "passed": true,
+    "reinstallPreservedRollback": true,
+    "removalDeferredForPin": true,
+    "removalReclaimedAfterRelease": true,
+    "rollback": true,
+    "tamperRejected": true
+  },
+  "host": {
+    "architecture": "arm64",
+    "minimumOSExecutionVerified": false,
+    "os": "macOS 26.5.1 (25F80)",
+    "xcode": "26.5"
+  },
+  "independentOutputs": {
+    "audio": {
+      "bytes": "33465",
+      "codecs": [
+        "flac"
+      ],
+      "duration": "2.000000",
+      "sha256": "d8859c121daddd38e667e2d8bd25beae62d2cab44fa0c2093fe601328ab5dfdb"
+    },
+    "updatedAudio": {
+      "bytes": "33465",
+      "codecs": [
+        "flac"
+      ],
+      "duration": "2.000000",
+      "sha256": "257fd135efe091abb1402d682a53cf1e758c6a7c3ded2693072a6c49ba19b01e"
+    },
+    "updatedVideo": {
+      "bytes": "58261",
+      "codecs": [
+        "h264",
+        "aac"
+      ],
+      "duration": "2.020000",
+      "sha256": "4972539816811b32d62a4194cf527d3492c0f9f78976bde0bde12cb3068195ab"
+    },
+    "video": {
+      "bytes": "58261",
+      "codecs": [
+        "h264",
+        "aac"
+      ],
+      "duration": "2.020000",
+      "sha256": "403f11ae9cece73a59fba1e9758484b2c963746af5622ca05e8cd82af5198596"
+    }
+  },
+  "latestCandidateSignature": {
+    "CDHash": "3a6ab6b66659f3139e4db768b75c46feed847515",
+    "TeamIdentifier": "QJ75C25V8L",
+    "Timestamp": "20 Oct 2026 at 15:56:04",
+    "strictAppAndPackVerification": true
+  },
+  "nativeUI": [
+    "available state and sizes/notices",
+    "explicit download and installed state",
+    "licenses/source/version disclosure",
+    "window media conversion after install without restart",
+    "import FFmpeg 8.1.1 pack 0.1.0",
+    "download update to pack 0.1.2",
+    "rollback to pack 0.1.0",
+    "remove and return to available; runtime files reclaimed"
+  ],
+  "observedCancellationChild": {
+    "parent": "File Converter.app/Contents/XPCServices/ConversionWorker.xpc/Contents/MacOS/ConversionWorker",
+    "parentPID": 43633,
+    "pid": 43737,
+    "terminated": true
+  },
+  "pack": {
+    "downloadBytes": 21870879,
+    "downloadURL": "https://github.com/agiusthomas/file-converter/releases/download/engine-media-v0.1.2/Media-0.1.2.zip",
+    "ffmpeg": "8.1.2",
+    "installedBytes": 33491160,
+    "notarization": {
+      "id": "84e39575-7094-489b-82f5-63900b703e38",
+      "message": "Processing complete",
+      "status": "Accepted"
+    },
+    "scope": "qualification preview; MP3/Opus/VP9 dependencies and full Media gates remain required",
+    "sha256": "419e2db4491978df9773ef5b7ee70edf1aeb4b2f51265065566e931052791dbb",
+    "version": "0.1.2"
+  },
+  "preservedPublishedAppArtifacts": "Original v0.2.0 DMG and ZIP still pass build/SHA256SUMS.txt",
+  "rootGuardSignedAppRun": {
+    "cancellation": true,
+    "deactivatedPinnedRuntimeUsable": true,
+    "fixtureRoot": "/private/tmp/file-converter-media-root-guard-10",
+    "originalsUnchanged": true,
+    "passed": true,
+    "reinstallPreservedRollback": true,
+    "removalDeferredForPin": true,
+    "removalReclaimedAfterRelease": true,
+    "rollback": true,
+    "tamperRejected": true
+  },
+  "signedAppRun": {
+    "cancellation": true,
+    "deactivatedPinnedRuntimeUsable": true,
+    "interruptedDownloadBytes": 13771,
+    "interruptedDownloadPreservedRuntime": true,
+    "originalsUnchanged": true,
+    "passed": true,
+    "reinstallPreservedRollback": true,
+    "removalDeferredForPin": true,
+    "removalReclaimedAfterRelease": true,
+    "rollback": true,
+    "tamperRejected": true
+  },
+  "tests": {
+    "log": "build/engine-verified-integration-tests.log",
+    "passed": 64,
+    "skipped": 0,
+    "total": 64
+  },
+  "uiConversion": {
+    "codecs": [
+      "h264",
+      "aac"
+    ],
+    "duration": 2.02,
+    "engine": "media",
+    "jobID": "534A0130-20E8-4B7C-8DDA-0D9E64DF3DFE",
+    "originalUnchanged": true,
+    "pack": "0.1.2"
+  },
+  "unverified": [
+    "macOS 13 execution",
+    "clean offline installation",
+    "full VoiceOver and appearance matrix",
+    "physical Finder gestures",
+    "large-batch benchmarks",
+    "worker/app crash, disk-full, revoked-grant and interrupted activation qualification",
+    "UI cancellation: download completed before manual action; signed-app harness cancellation passed"
+  ]
+}

@@ -13,10 +13,15 @@ identity="${CONVERTER_SIGN_IDENTITY:--}"
 # macOS container ACLs distinguish ad-hoc and Developer ID identities. Keep
 # development scratch data separate from the signed production worker.
 worker_service="io.local.file-converter.worker.development"
-if [[ "$identity" != "-" ]]; then worker_service="io.local.file-converter.worker.production"; fi
+if [[ "$identity" != "-" ]]; then
+  # Keep this protocol generation stable across app updates: its Application
+  # Scripts directory is the immutable runtime store. The old preview used a
+  # different worker identity/container and cannot supply this worker protocol.
+  worker_service="io.local.file-converter.worker.production.v3"
+fi
 /bin/zsh scripts/swift-local.sh build -c "$configuration"
 binary_dir="$(/bin/zsh scripts/swift-local.sh build -c "$configuration" --show-bin-path)"
-xcode_arguments=(-quiet -project FileConverter.xcodeproj -scheme FileConverter -configuration "$xcode_configuration" -destination "platform=macOS,arch=arm64" -derivedDataPath build/Xcode -clonedSourcePackagesDirPath build/Packages "CODE_SIGN_IDENTITY=$identity" CODE_SIGN_STYLE=Manual "CONVERTER_WORKER_SERVICE_IDENTIFIER=$worker_service")
+xcode_arguments=(-quiet -project FileConverter.xcodeproj -scheme FileConverter -configuration "$xcode_configuration" -destination "generic/platform=macOS" -derivedDataPath build/Xcode -clonedSourcePackagesDirPath build/Packages "CODE_SIGN_IDENTITY=$identity" CODE_SIGN_STYLE=Manual "CONVERTER_WORKER_SERVICE_IDENTIFIER=$worker_service")
 if [[ -n "${CONVERTER_DEVELOPMENT_TEAM:-}" ]]; then xcode_arguments+=("DEVELOPMENT_TEAM=$CONVERTER_DEVELOPMENT_TEAM"); fi
 xcodebuild "${xcode_arguments[@]}" build
 app_dir="$project_dir/build/File Converter.app"

@@ -5,6 +5,12 @@ import Combine
 @main struct FileConverterApplication {
     @MainActor static func main() {
         let application = NSApplication.shared
+        if let index = CommandLine.arguments.firstIndex(of:"--engine-acceptance"), CommandLine.arguments.indices.contains(index+1) {
+            let root = URL(fileURLWithPath:CommandLine.arguments[index+1],isDirectory:true)
+            Task { await EngineAcceptance.run(in:root) }
+            application.run()
+            return
+        }
         let delegate = ApplicationDelegate()
         application.delegate = delegate
         withExtendedLifetime(delegate) { application.run() }
@@ -34,6 +40,7 @@ import Combine
         }
         wheel.inspect = { [weak self] urls in guard let self else { return [] }; return try await self.model.inspect(urls) }
         wheel.installedPacks = Set(model.packs.map(\.id))
+        model.$packs.sink { [weak self] packs in self?.wheel.installedPacks = Set(packs.map(\.id)) }.store(in:&subscriptions)
         wheel.onConversion = { [weak self] sources, choice in self?.model.performWheel(sources,choice:choice) }
         monitor.modifier = model.modifier
         model.onModifierChanged = { [weak self] in self?.monitor.modifier = $0 }
