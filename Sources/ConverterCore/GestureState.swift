@@ -15,7 +15,7 @@ public struct DragSample: Sendable {
 }
 
 public struct DragGestureState: Sendable {
-    public enum Action: Equatable { case showWheel, dismissWheel }
+    public enum Action: Equatable { case showWheel, releaseWheel, dismissWheel }
     private var previousDown = false
     private var idleRevision: Int?
     private var dragRevision: Int?
@@ -26,10 +26,11 @@ public struct DragGestureState: Sendable {
     public init() {}
     public mutating func update(_ sample: DragSample) -> Action? {
         if !sample.mouseDown {
-            let shouldDismiss = activated
+            let shouldRelease = activated && !cancelled && !sample.escapeDown
+            let shouldDismiss = activated && !shouldRelease
             previousDown = false; activated = false; cancelled = false
             idleRevision = sample.pasteboardRevision; dragRevision = nil
-            return shouldDismiss ? .dismissWheel : nil
+            return shouldRelease ? .releaseWheel : shouldDismiss ? .dismissWheel : nil
         }
         if !previousDown {
             previousDown = true; startX = sample.x; startY = sample.y

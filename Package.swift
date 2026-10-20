@@ -17,7 +17,8 @@ let package = Package(
         .executableTarget(name: "ConverterWorker", dependencies: ["ConverterCore"]),
         .executableTarget(name: "FileConverter", dependencies: ["ConverterCore"]),
         .executableTarget(name: "ConverterCLI", dependencies: ["ConverterCore"]),
-        .testTarget(name: "ConverterCoreTests", dependencies: ["ConverterCore"])
+        .testTarget(name: "ConverterCoreTests", dependencies: ["ConverterCore"]),
+        .testTarget(name: "FileConverterTests", dependencies: ["FileConverter"])
     ],
     swiftLanguageModes: [.v5]
 )

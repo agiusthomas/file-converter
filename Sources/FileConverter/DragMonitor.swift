@@ -8,6 +8,7 @@ import ConverterCore
     private var state = DragGestureState()
     private let pasteboard = NSPasteboard(name: .drag)
     var onActivation: (([URL], NSPoint) -> Void)?
+    var onRelease: ((NSPoint) -> Void)?
     var onDismissal: (() -> Void)?
     func start() {
         guard timer == nil else { return }
@@ -27,15 +28,16 @@ import ConverterCore
         let shift = flags.intersection([.maskShift,.maskCommand,.maskControl,.maskAlternate]) == expected
         let hasFiles = pasteboard.availableType(from: [.fileURL]) != nil
         let sample = DragSample(mouseDown: down, shiftDown: shift,
-                                escapeDown: down && CGEventSource.keyState(.combinedSessionState, key: 53),
+                                escapeDown: CGEventSource.keyState(.combinedSessionState, key: 53),
                                 x: position.x, y: position.y, pasteboardRevision: pasteboard.changeCount, hasFiles: hasFiles)
         switch state.update(sample) {
         case .showWheel:
             let urls = Self.files(from: pasteboard)
             if !urls.isEmpty { onActivation?(urls, position) }
+        case .releaseWheel:
+            onRelease?(position)
         case .dismissWheel:
-            // AppKit's drop callback must finish before the polling cleanup.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in self?.onDismissal?() }
+            onDismissal?()
         case nil: break
         }
     }

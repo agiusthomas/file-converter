@@ -41,6 +41,25 @@ final class OperationTests: XCTestCase {
         XCTAssertEqual(try FileDigest.sha256(input),before)
         XCTAssertNotEqual(manifest.outputs[0].url,input)
     }
+    func testJPGWheelChoicesProduceValidatedWebPAVIFAndPDF() async throws {
+        let jobs = coordinator()
+        let png = try image()
+        let jpeg = try await jobs.run(.init(inputs:[png],action:.imageConvert,profiles:[ActionCatalog.jpg]))
+        let source = try XCTUnwrap(jpeg.outputs.first?.url)
+        let originalHash = try FileDigest.sha256(source)
+        let assets = try await AssetInspector.inspect(source)
+        let choices = WheelChoice.common([assets]).filter { ["avif","webp","pdf"].contains($0.profile.id) }
+        XCTAssertTrue(choices.contains { $0.profile.id == "webp" })
+        XCTAssertTrue(choices.contains { $0.profile.id == "pdf" })
+        for choice in choices {
+            let result = try await jobs.run(.init(inputs:[source],action:choice.action,profiles:[choice.profile]))
+            let output = try XCTUnwrap(result.outputs.first)
+            XCTAssertTrue(output.validated)
+            let inspected = try await AssetInspector.inspect(output.url)
+            XCTAssertEqual(inspected.format, choice.profile.id)
+        }
+        XCTAssertEqual(try FileDigest.sha256(source), originalHash)
+    }
     func testUnreachableImageSizePublishesNothing() async throws {
         let input = try image(); var options = OperationOptions(); options.targetBytes = 1
         do { _ = try await coordinator().run(.init(inputs:[input],action:.imageConvert,profiles:[ActionCatalog.jpg],options:options)); XCTFail("Unreachable target succeeded") } catch {}

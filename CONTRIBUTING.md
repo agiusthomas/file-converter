@@ -16,6 +16,8 @@ open "build/File Converter.app"
 
 The package currently has no third-party dependencies. The build scripts keep generated files and compiler caches within the project.
 
+With access to a macOS desktop session, run `FILE_CONVERTER_WHEEL_TESTS=1 ./scripts/swift-local.sh test` to also check that the visible wheel receives pointer hits and starts conversion on release when the native drop callback is absent. This supplements the automated sector, cancellation, duplicate-submission and JPG conversion checks; physical Finder drags still need manual testing.
+
 ## Pull requests
 
 - Describe the user-visible behavior and how you verified it.

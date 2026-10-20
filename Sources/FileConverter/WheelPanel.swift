@@ -3,14 +3,17 @@ import SwiftUI
 import ConverterCore
 
 @MainActor final class WheelPanelController {
-    private var panel: NSPanel?
+    private(set) var panel: NSPanel?
     var inspect: (([URL]) async throws -> [AssetDescriptor])?
     var installedPacks: Set<String> = []
     private var inspection: Task<Void,Never>?
+    private var pointerTimer: Timer?
+    private var dragPresentation = false
     private var generation = UUID()
     var onConversion: (([URL], WheelChoice) -> Void)?
     func show(sources: [URL], at point: NSPoint, clickable: Bool = false) {
         dismiss()
+        dragPresentation = !clickable
         let id = UUID(); generation = id
         inspection = Task { [weak self] in
             guard let self, let inspect, let assets = try? await inspect(sources), !Task.isCancelled, generation == id else { return }
@@ -28,7 +31,10 @@ import ConverterCore
         let panel = WheelPanel(contentRect: NSRect(origin: origin, size: size), styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.level = .popUpMenu
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        panel.backgroundColor = .clear; panel.isOpaque = false; panel.hasShadow = false
+        // A zero-alpha window can pass Finder's drop through while SwiftUI's
+        // glass is compositing. Keep an imperceptible native hit surface.
+        panel.backgroundColor = NSColor.black.withAlphaComponent(0.001)
+        panel.isOpaque = false; panel.hasShadow = false
         panel.hidesOnDeactivate = false; panel.isReleasedWhenClosed = false
         panel.acceptsMouseMovedEvents = true
         let wheel = WheelView(frame: NSRect(origin: .zero, size: size), sources: sources, formats: formats)
@@ -37,15 +43,53 @@ import ConverterCore
         }
         wheel.onCancel = { [weak self] in self?.dismiss() }
         panel.contentView = wheel; self.panel = panel
+        dragPresentation = !clickable
         panel.orderFrontRegardless()
-        if clickable { panel.makeKey(); panel.makeFirstResponder(wheel) }
+        if clickable {
+            panel.makeKey(); panel.makeFirstResponder(wheel)
+        } else {
+            // Finder owns the drag session. Its destination callbacks can be
+            // coalesced, so keep the visual selection in sync independently.
+            wheel.updateDragHighlight(at: NSEvent.mouseLocation)
+            let timer = Timer(timeInterval: 1.0 / 120, repeats: true) { [weak wheel] _ in
+                MainActor.assumeIsolated {
+                    // DragMonitor coordinates release with the native drop callback.
+                    guard CGEventSource.buttonState(.combinedSessionState, button: .left) else { return }
+                    wheel?.updateDragHighlight(at: NSEvent.mouseLocation)
+                }
+            }
+            timer.tolerance = 0.002
+            pointerTimer = timer
+            RunLoop.main.add(timer, forMode: .common)
+        }
     }
-    func dismiss() { inspection?.cancel(); inspection = nil; generation = UUID(); panel?.orderOut(nil); panel = nil }
+    func releaseDrag(at screenPoint: NSPoint) {
+        pointerTimer?.invalidate(); pointerTimer = nil
+        guard dragPresentation, let panel, let wheel = panel.contentView as? WheelView else {
+            if dragPresentation { dismiss() }
+            return
+        }
+        // A covered wheel must never convert a drop intended for another window.
+        let overWheel = NSWindow.windowNumber(at: screenPoint, belowWindowWithWindowNumber: 0) == panel.windowNumber
+        let id = generation
+        // Let AppKit consume the drop first. If Finder omits the destination
+        // callback, commit the same captured release position once it settles.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self, weak wheel] in
+            guard let self, self.generation == id else { return }
+            if overWheel { wheel?.completeDrag(at: screenPoint) }
+            if self.generation == id { self.dismiss() }
+        }
+    }
+    func dismiss() {
+        pointerTimer?.invalidate(); pointerTimer = nil
+        dragPresentation = false
+        inspection?.cancel(); inspection = nil; generation = UUID(); panel?.orderOut(nil); panel = nil
+    }
 }
 
 private final class WheelPanel: NSPanel { override var canBecomeKey: Bool { true } }
 
-@MainActor private final class WheelView: NSView {
+@MainActor final class WheelView: NSView {
     let sources: [URL]
     let formats: [WheelChoice]
     var selected: Int? {
@@ -60,6 +104,7 @@ private final class WheelPanel: NSPanel { override var canBecomeKey: Bool { true
     private let artworkState = WheelArtworkState()
     private var labelButtons: [NSButton] = []
     private var tracking: NSTrackingArea?
+    private var didChoose = false
     private var geometry: WheelGeometry { WheelGeometry(count: formats.count) }
     override var acceptsFirstResponder: Bool { true }
     init(frame: NSRect, sources: [URL], formats: [WheelChoice]) {
@@ -92,19 +137,33 @@ private final class WheelPanel: NSPanel { override var canBecomeKey: Bool { true
         addTrackingArea(tracking); self.tracking = tracking
     }
     private func index(at point: NSPoint) -> Int? { geometry.sector(x: point.x - 210, y: point.y - 210) }
+    func updateDragHighlight(at screenPoint: NSPoint) {
+        guard let window else { return }
+        selected = index(at: convert(window.convertPoint(fromScreen: screenPoint), from: nil))
+    }
+    func completeDrag(at screenPoint: NSPoint) {
+        updateDragHighlight(at: screenPoint)
+        chooseSelected(sources)
+    }
+    @discardableResult private func chooseSelected(_ urls: [URL]) -> Bool {
+        guard !didChoose, let selected else { return false }
+        didChoose = true
+        onChoose?(urls, formats[selected])
+        return true
+    }
     override func mouseMoved(with event: NSEvent) { selected = index(at: convert(event.locationInWindow, from: nil)) }
     override func mouseExited(with event: NSEvent) { selected = nil }
     override func mouseDown(with event: NSEvent) {
-        if let index = index(at: convert(event.locationInWindow, from: nil)) { onChoose?(sources, formats[index]) }
+        if let index = index(at: convert(event.locationInWindow, from: nil)) { selected = index; chooseSelected(sources) }
         else { onCancel?() }
     }
-    @objc private func chooseLabel(_ sender: NSButton) { onChoose?(sources, formats[sender.tag]) }
+    @objc private func chooseLabel(_ sender: NSButton) { selected = sender.tag; chooseSelected(sources) }
     override func keyDown(with event: NSEvent) {
         switch event.keyCode {
         case 53: onCancel?()
         case 123, 126: selected = ((selected ?? 0) - 1 + formats.count) % formats.count
         case 124, 125: selected = ((selected ?? -1) + 1) % formats.count
-        case 36, 76: if let selected { onChoose?(sources, formats[selected]) }
+        case 36, 76: chooseSelected(sources)
         default: super.keyDown(with: event)
         }
     }
@@ -119,9 +178,11 @@ private final class WheelPanel: NSPanel { override var canBecomeKey: Bool { true
         selected = index(at: convert(sender.draggingLocation, from: nil)); return selected != nil
     }
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        guard let selected, DragMonitor.files(from: sender.draggingPasteboard) == sources else { return false }
+        // Resolve the final drop independently of the last hover sample.
+        selected = index(at: convert(sender.draggingLocation, from: nil))
+        guard selected != nil, DragMonitor.files(from: sender.draggingPasteboard) == sources else { return false }
         let urls = DragMonitor.files(from: sender.draggingPasteboard)
-        onChoose?(urls, formats[selected]); return true
+        return chooseSelected(urls)
     }
     private func updateButtons() {
         for (index, button) in labelButtons.enumerated() {
@@ -148,7 +209,7 @@ private struct LiveWheelArtwork: View {
         WheelArtwork(labels: formats.map(\.title), selected: state.selected,
                      title: state.selected.map { formats[$0].title }
                         ?? (sources.count == 1 ? sources[0].pathExtension.uppercased() : "\(sources.count) FILES"),
-                     subtitle: state.selected == nil ? "Choose format" : "Drop to convert")
+                     subtitle: state.selected == nil ? "Choose format" : "Drop to convert", animatesSelection: false)
     }
 }
 

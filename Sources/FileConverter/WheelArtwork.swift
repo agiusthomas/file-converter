@@ -39,8 +39,9 @@ struct WheelArtwork: View {
     let title: String
     let subtitle: String
     var showsFormatLabels = false
+    var animatesSelection = true
     init(formats: [ImageFormat], selected: Int?, title: String, subtitle: String, showsFormatLabels: Bool = false) { self.labels = formats.map(\.title); self.selected = selected; self.title = title; self.subtitle = subtitle; self.showsFormatLabels = showsFormatLabels }
-    init(labels: [String], selected: Int?, title: String, subtitle: String, showsFormatLabels: Bool = false) { self.labels = labels; self.selected = selected; self.title = title; self.subtitle = subtitle; self.showsFormatLabels = showsFormatLabels }
+    init(labels: [String], selected: Int?, title: String, subtitle: String, showsFormatLabels: Bool = false, animatesSelection: Bool = true) { self.labels = labels; self.selected = selected; self.title = title; self.subtitle = subtitle; self.showsFormatLabels = showsFormatLabels; self.animatesSelection = animatesSelection }
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorSchemeContrast) private var contrast
 
@@ -88,7 +89,7 @@ struct WheelArtwork: View {
                     }
                 }
             }
-            .animation(reduceMotion ? nil : .easeInOut(duration: 0.15), value: selected)
+            .animation(reduceMotion || !animatesSelection ? nil : .easeInOut(duration: 0.15), value: selected)
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)

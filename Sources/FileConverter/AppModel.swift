@@ -66,19 +66,26 @@ enum WorkspacePage: String, CaseIterable { case convert = "Convert", activity = 
     var failedCount: Int { jobs.filter { [.failed,.interrupted].contains($0.state) }.count }
     var activeCount: Int { jobs.filter { ![.succeeded,.failed,.cancelled,.interrupted].contains($0.state) }.count }
     var progress: Double { jobs.isEmpty ? 0 : Double(jobs.count-activeCount)/Double(jobs.count) }
-    init() {
+    init(coordinator: JobCoordinator? = nil) {
         UserDefaults.standard.register(defaults:["wheelEnabled":true,"wheelModifier":"shift","quality":0.9,"preserveMetadata":true])
         wheelEnabled = UserDefaults.standard.bool(forKey:"wheelEnabled"); modifier = UserDefaults.standard.string(forKey:"wheelModifier") ?? "shift"
         let installed = EnginePacks.installed(); packs = installed
-        let worker = Bundle.main.bundleURL.appendingPathComponent("Contents/XPCServices/ConversionWorker.xpc")
-        let transport: any WorkerTransport = FileManager.default.fileExists(atPath:worker.path) ? XPCWorkerTransport() : ProcessWorkerTransport(executable:URL(fileURLWithPath:CommandLine.arguments[0]).deletingLastPathComponent().appendingPathComponent("converter-worker"))
-        coordinator = JobCoordinator(transport:transport,packs:installed)
+        if let coordinator { self.coordinator = coordinator }
+        else {
+            let worker = Bundle.main.bundleURL.appendingPathComponent("Contents/XPCServices/ConversionWorker.xpc")
+            let transport: any WorkerTransport = FileManager.default.fileExists(atPath:worker.path) ? XPCWorkerTransport() : ProcessWorkerTransport(executable:URL(fileURLWithPath:CommandLine.arguments[0]).deletingLastPathComponent().appendingPathComponent("converter-worker"))
+            self.coordinator = JobCoordinator(transport:transport,packs:installed)
+        }
         options.quality = UserDefaults.standard.double(forKey:"quality"); options.preserveMetadata = UserDefaults.standard.bool(forKey:"preserveMetadata")
         if let data = UserDefaults.standard.data(forKey:"recipes"), let saved = try? JSONDecoder().decode([Recipe].self,from:data) { recipes = saved } else { recipes = Self.starterRecipes }
         if let data = UserDefaults.standard.data(forKey:"watchRules"), let rules = try? JSONDecoder().decode([WatchRule].self,from:data) { watchRules = rules }
         let shelfBookmarks = UserDefaults.standard.array(forKey:"shelfBookmarks") as? [Data] ?? []
         shelf = shelfBookmarks.compactMap { data in var stale = false; return try? URL(resolvingBookmarkData:data,options:.withSecurityScope,relativeTo:nil,bookmarkDataIsStale:&stale) }
-        Task { try? await Task.detached { try TransientWorkspace.removeExpired() }.value; await refreshHistory(recover:true); await refreshEngineLibrary(); restartWatchers() }
+        // Injected coordinators own their isolated session; normal app startup
+        // restores saved history, engine state and watched folders.
+        if coordinator == nil {
+            Task { try? await Task.detached { try TransientWorkspace.removeExpired() }.value; await refreshHistory(recover:true); await refreshEngineLibrary(); restartWatchers() }
+        }
     }
     static var starterRecipes: [Recipe] {
         var screenshot = OperationOptions(); screenshot.maximumDimension = 1920; screenshot.preserveMetadata = false; screenshot.targetBytes = 2*1024*1024; screenshot.allowDownscale = true
@@ -159,11 +166,13 @@ enum WorkspacePage: String, CaseIterable { case convert = "Convert", activity = 
     }
     func performWheel(_ urls: [URL], choice: WheelChoice) {
         if choice.needsOptions { setSources(urls); selectedAction = choice.action; selectedProfileID = choice.profile.id; onShowWindow?(); return }
-        if choice.aggregate { enqueue(OperationRequest(inputs:urls,action:choice.action,profiles:[choice.profile])) }
-        else { for url in urls { enqueue(OperationRequest(inputs:[url],action:choice.action,profiles:[choice.profile])) } }
+        if choice.aggregate { enqueue(OperationRequest(inputs:urls,action:choice.action,profiles:[choice.profile]), showWindow: false) }
+        else { for url in urls { enqueue(OperationRequest(inputs:[url],action:choice.action,profiles:[choice.profile]), showWindow: false) } }
     }
-    func enqueue(_ request: OperationRequest) {
-        guard !isCancelling else { return }; pending.append(request); jobs.append(JobRecord(request:request)); onShowWindow?(); message = nil
+    func enqueue(_ request: OperationRequest, showWindow: Bool = true) {
+        guard !isCancelling else { return }; pending.append(request); jobs.append(JobRecord(request:request))
+        if showWindow { onShowWindow?() }
+        message = nil
         Task {
             do { try await coordinator.submit(request); if pending.contains(where:{$0.id == request.id}) { startQueue() } else { try await coordinator.cancelSubmitted(request.id) } }
             catch { pending.removeAll {$0.id == request.id}; if let index = jobs.firstIndex(where:{$0.id == request.id}) { jobs[index].state = .failed; jobs[index].error = error.localizedDescription } }

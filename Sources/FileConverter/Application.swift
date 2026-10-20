@@ -49,6 +49,7 @@ import Combine
             self.wheel.show(sources: sources, at: point)
         }
         monitor.onDismissal = { [weak self] in self?.wheel.dismiss() }
+        monitor.onRelease = { [weak self] point in self?.wheel.releaseDrag(at: point) }
         if model.wheelEnabled { monitor.start() }
         if !CommandLine.arguments.contains("--background") { showWindow() }
     }

@@ -11,7 +11,7 @@ final class GestureTests: XCTestCase {
         XCTAssertNil(state.update(sample(true, shift: true)))
         XCTAssertEqual(state.update(sample(true, shift: true, x: 12, revision: 11)), .showWheel)
         XCTAssertNil(state.update(sample(true, x: 30, revision: 11)))
-        XCTAssertEqual(state.update(sample(false, revision: 11)), .dismissWheel)
+        XCTAssertEqual(state.update(sample(false, revision: 11)), .releaseWheel)
     }
     func testShiftPressedDuringDragAndEscapeDoNotReactivateUntilNextDrag() {
         var state = DragGestureState()
@@ -39,6 +39,17 @@ final class GestureTests: XCTestCase {
         _ = state.update(sample(false, files: false))
         _ = state.update(sample(true, shift: true, files: false))
         XCTAssertNil(state.update(sample(true, shift: true, x: 100, revision: 11, files: false)))
+    }
+    func testReleaseOnlyCommitsOnceAndEscapeOnReleaseCancels() {
+        for escape in [false, true] {
+            var state = DragGestureState()
+            _ = state.update(sample(false))
+            _ = state.update(sample(true, shift: true))
+            XCTAssertEqual(state.update(sample(true, shift: true, x: 12, revision: 11)), .showWheel)
+            XCTAssertEqual(state.update(sample(false, escape: escape, x: 100, revision: 11)),
+                           escape ? .dismissWheel : .releaseWheel)
+            XCTAssertNil(state.update(sample(false, x: 100, revision: 11)))
+        }
     }
     func testWheelHitTestingHasNeutralCentreOutsideAndSectorGaps() {
         let geometry = WheelGeometry(count: 8)
