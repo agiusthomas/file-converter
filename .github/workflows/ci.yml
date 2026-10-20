@@ -26,7 +26,9 @@ jobs:
         run: |
           xcodebuild -version
           swift --version
-      - name: Test conversion core
+      - name: Test native conversion and recovery
+        env:
+          FILE_CONVERTER_MEDIA_TESTS: "1"
         run: ./scripts/swift-local.sh test
       - name: Build release app
         run: ./scripts/build-app.sh release

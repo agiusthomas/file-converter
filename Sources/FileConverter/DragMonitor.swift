@@ -3,6 +3,7 @@ import CoreGraphics
 import ConverterCore
 
 @MainActor final class DragMonitor {
+    var modifier = "shift"
     private var timer: Timer?
     private var state = DragGestureState()
     private let pasteboard = NSPasteboard(name: .drag)
@@ -22,7 +23,8 @@ import ConverterCore
         let position = NSEvent.mouseLocation
         let down = CGEventSource.buttonState(.combinedSessionState, button: .left)
         let flags = CGEventSource.flagsState(.combinedSessionState)
-        let shift = flags.contains(.maskShift) && flags.intersection([.maskCommand, .maskControl, .maskAlternate]).isEmpty
+        let expected: CGEventFlags = modifier == "option" ? .maskAlternate : modifier == "control" ? .maskControl : .maskShift
+        let shift = flags.intersection([.maskShift,.maskCommand,.maskControl,.maskAlternate]) == expected
         let hasFiles = pasteboard.availableType(from: [.fileURL]) != nil
         let sample = DragSample(mouseDown: down, shiftDown: shift,
                                 escapeDown: down && CGEventSource.keyState(.combinedSessionState, key: 53),

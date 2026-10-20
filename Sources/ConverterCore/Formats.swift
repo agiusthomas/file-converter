@@ -35,7 +35,7 @@ public struct CapabilityRegistry: Sendable {
     public init() {
         let identifiers = Set(CGImageDestinationCopyTypeIdentifiers() as! [String])
         writableFormats = [.jpeg, .png, .webp, .heic, .tiff, .avif, .bmp, .pdf].filter {
-            $0 == .pdf || identifiers.contains($0.typeIdentifier)
+            $0 == .pdf || $0 == .webp || identifiers.contains($0.typeIdentifier)
         }
     }
     public init(writableFormats: [ImageFormat]) { self.writableFormats = writableFormats }
@@ -53,6 +53,12 @@ public struct CapabilityRegistry: Sendable {
 public struct ConversionOptions: Sendable {
     public var quality: Double
     public var preserveMetadata: Bool
+    public var maximumDimension: Int?
+    public var crop: CropRect?
+    public var rotation: Int = 0
+    public var background: String = "FFFFFF"
+    public var removeLocation: Bool = false
+    public var scanCleanup: Bool = false
     public init(quality: Double = 0.9, preserveMetadata: Bool = true) {
         self.quality = min(1, max(0, quality))
         self.preserveMetadata = preserveMetadata

@@ -2,6 +2,7 @@ import Foundation
 import CoreGraphics
 import ImageIO
 import UniformTypeIdentifiers
+import WebPBridge
 
 public actor ImageConverter {
     public init() {}
@@ -42,11 +43,17 @@ public actor ImageConverter {
         if count > 1, CGImageSourceGetType(source) as String? != UTType.tiff.identifier {
             notices.append("Every frame is kept as a still page. Animation timing is not preserved.")
         }
-        if request.format == .pdf {
+        if request.format == .webp {
+            let image = try transformed(normalizedImage(source,index:0),options:request.options)
+            try writeWebP(image,to:stage,quality:request.options.quality)
+            firstDimensions = (image.width,image.height)
+            guard let verified = CGImageSourceCreateWithURL(stage as CFURL,nil), let decoded = CGImageSourceCreateImageAtIndex(verified,0,nil), decoded.width == image.width, decoded.height == image.height else { throw ConversionError.verificationFailed }
+            notices.append("WebP exports use sRGB and omit source metadata. Transparency is preserved; animation is not supported.")
+        } else if request.format == .pdf {
             guard let consumer = CGDataConsumer(url: stage as CFURL), let context = CGContext(consumer: consumer, mediaBox: nil, nil) else { throw ConversionError.encodeFailed }
             for index in 0..<count {
                 try Task.checkCancellation()
-                let image = try normalizedImage(source, index: index)
+                let image = try transformed(normalizedImage(source, index: index), options: request.options)
                 if index == 0 { firstDimensions = (image.width, image.height) }
                 expectedDimensions.append((image.width, image.height))
                 // 144 DPI keeps the page size practical while retaining the full image data.
@@ -63,14 +70,16 @@ public actor ImageConverter {
             guard let destination = CGImageDestinationCreateWithURL(stage as CFURL, request.format.typeIdentifier as CFString, count, nil) else { throw ConversionError.encodeFailed }
             for index in 0..<count {
                 try Task.checkCancellation()
-                var image = try normalizedImage(source, index: index)
+                var image = try transformed(normalizedImage(source, index: index), options: request.options)
                 if [.jpeg, .bmp].contains(request.format), image.alphaInfo != .none {
-                    image = try flattened(image)
-                    if !notices.contains("Transparency is flattened onto white.") { notices.append("Transparency is flattened onto white.") }
+                    image = try flattened(image, background: request.options.background)
+                    let notice = request.options.background == "FFFFFF" ? "Transparency is flattened onto white." : "Transparency is flattened onto #\(request.options.background)."
+                    if !notices.contains(notice) { notices.append(notice) }
                 }
                 if index == 0 { firstDimensions = (image.width, image.height) }
                 expectedDimensions.append((image.width, image.height))
                 var properties = request.options.preserveMetadata ? (CGImageSourceCopyPropertiesAtIndex(source, index, nil) as? [CFString: Any] ?? [:]) : [:]
+                if request.options.removeLocation { properties.removeValue(forKey: kCGImagePropertyGPSDictionary) }
                 // Pixel transforms must not leave a second orientation transform in the output.
                 properties[kCGImagePropertyOrientation] = 1
                 properties[kCGImagePropertyPixelWidth] = image.width
@@ -95,6 +104,9 @@ public actor ImageConverter {
                 guard let decoded = CGImageSourceCreateImageAtIndex(verified, index, nil),
                       decoded.width == expectedDimensions[index].width,
                       decoded.height == expectedDimensions[index].height else { throw ConversionError.verificationFailed }
+                if request.options.removeLocation,
+                   let props = CGImageSourceCopyPropertiesAtIndex(verified, index, nil) as? [CFString: Any],
+                   props[kCGImagePropertyGPSDictionary] != nil { throw ConversionError.verificationFailed }
             }
         }
         try Task.checkCancellation()
@@ -117,13 +129,60 @@ public actor ImageConverter {
         guard let image = CGImageSourceCreateThumbnailAtIndex(source, index, options as CFDictionary) else { throw ConversionError.decodeFailed }
         return image
     }
-    private func flattened(_ image: CGImage) throws -> CGImage {
+    private func flattened(_ image: CGImage, background: String = "FFFFFF") throws -> CGImage {
         let colorSpace = image.colorSpace?.model == .rgb ? image.colorSpace! : CGColorSpace(name: CGColorSpace.sRGB)!
         guard let context = CGContext(data: nil, width: image.width, height: image.height, bitsPerComponent: 8, bytesPerRow: 0, space: colorSpace, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { throw ConversionError.decodeFailed }
         let bounds = CGRect(x: 0, y: 0, width: image.width, height: image.height)
-        context.setFillColor(CGColor(gray: 1, alpha: 1)); context.fill(bounds)
+        context.setFillColor(Self.backgroundColor(background)); context.fill(bounds)
         context.draw(image, in: bounds)
         guard let result = context.makeImage() else { throw ConversionError.decodeFailed }
         return result
+    }
+    public static func backgroundColor(_ hex: String) -> CGColor {
+        let value = UInt32(hex, radix: 16) ?? 0xffffff
+        return CGColor(red: CGFloat((value >> 16) & 255) / 255, green: CGFloat((value >> 8) & 255) / 255, blue: CGFloat(value & 255) / 255, alpha: 1)
+    }
+    private func writeWebP(_ image: CGImage, to output: URL, quality: Double) throws {
+        guard image.width <= 16383, image.height <= 16383 else { throw OperationFailure.resourceLimit }
+        let stride = image.width * 4
+        var rgba = [UInt8](repeating:0,count:stride * image.height)
+        try rgba.withUnsafeMutableBytes { bytes in
+            guard let context = CGContext(data:bytes.baseAddress,width:image.width,height:image.height,bitsPerComponent:8,bytesPerRow:stride,space:CGColorSpace(name:CGColorSpace.sRGB)!,bitmapInfo:CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue) else { throw ConversionError.encodeFailed }
+            context.draw(image,in:CGRect(x:0,y:0,width:image.width,height:image.height))
+        }
+        // CoreGraphics renders premultiplied pixels; libwebp takes straight RGBA.
+        for index in Swift.stride(from:0,to:rgba.count,by:4) {
+            let alpha = Int(rgba[index+3])
+            if alpha > 0 && alpha < 255 { for channel in 0..<3 { rgba[index+channel] = UInt8(min(255,(Int(rgba[index+channel])*255+alpha/2)/alpha)) } }
+        }
+        var encoded: UnsafeMutablePointer<UInt8>?
+        let size = fc_webp_encode(rgba,Int32(image.width),Int32(image.height),Int32(stride),Float(quality*100),&encoded)
+        guard size > 0, let encoded else { throw ConversionError.encodeFailed }
+        defer { fc_webp_free(encoded) }
+        try Data(bytes:encoded,count:size).write(to:output)
+    }
+    private func transformed(_ original: CGImage, options: ConversionOptions) throws -> CGImage {
+        var image = options.scanCleanup ? try ScanProcessor.clean(original) : original
+        if let crop = options.crop {
+            guard crop.x >= 0, crop.y >= 0, crop.width > 0, crop.height > 0,
+                  crop.x < image.width, crop.y < image.height,
+                  crop.width <= image.width - crop.x, crop.height <= image.height - crop.y,
+                  let cropped = image.cropping(to: CGRect(x: crop.x, y: crop.y, width: crop.width, height: crop.height)) else { throw OperationFailure.invalidOptions("Crop lies outside the image.") }
+            image = cropped
+        }
+        let rotation = ((options.rotation % 360) + 360) % 360
+        let swapped = rotation == 90 || rotation == 270
+        let rawWidth = swapped ? image.height : image.width, rawHeight = swapped ? image.width : image.height
+        let scale = min(1, Double(options.maximumDimension ?? max(rawWidth,rawHeight)) / Double(max(rawWidth,rawHeight)))
+        if scale == 1 && rotation == 0 { return image }
+        let width = max(1, Int(Double(rawWidth) * scale)), height = max(1, Int(Double(rawHeight) * scale))
+        let color = image.colorSpace?.model == .rgb ? image.colorSpace! : CGColorSpace(name: CGColorSpace.sRGB)!
+        guard let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0, space: color, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { throw ConversionError.decodeFailed }
+        context.interpolationQuality = .high
+        context.translateBy(x: CGFloat(width)/2, y: CGFloat(height)/2)
+        context.rotate(by: -CGFloat(rotation) * .pi / 180)
+        context.scaleBy(x: scale, y: scale)
+        context.draw(image, in: CGRect(x: -CGFloat(image.width)/2, y: -CGFloat(image.height)/2, width: CGFloat(image.width), height: CGFloat(image.height)))
+        guard let result = context.makeImage() else { throw ConversionError.decodeFailed }; return result
     }
 }

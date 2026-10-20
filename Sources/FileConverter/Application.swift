@@ -23,6 +23,7 @@ import Combine
         NSApplication.shared.setActivationPolicy(.accessory)
         FolderGrants.shared.restore()
         configureMenus()
+        NSApplication.shared.servicesProvider = self
         model.onShowWindow = { [weak self] in self?.showWindow() }
         model.onWheelSettingChanged = { [weak self] enabled in
             if enabled { self?.monitor.start() } else { self?.monitor.stop() }
@@ -31,7 +32,11 @@ import Combine
             guard let self else { return }
             self.wheel.show(sources: sources, at: NSEvent.mouseLocation, clickable: true)
         }
-        wheel.onConversion = { [weak self] sources, format in self?.model.enqueue(sources, to: format) }
+        wheel.inspect = { [weak self] urls in guard let self else { return [] }; return try await self.model.inspect(urls) }
+        wheel.installedPacks = Set(model.packs.map(\.id))
+        wheel.onConversion = { [weak self] sources, choice in self?.model.performWheel(sources,choice:choice) }
+        monitor.modifier = model.modifier
+        model.onModifierChanged = { [weak self] in self?.monitor.modifier = $0 }
         monitor.onActivation = { [weak self] sources, point in
             guard let self, !self.model.isCancelling else { return }
             self.wheel.show(sources: sources, at: point)
@@ -56,6 +61,12 @@ import Combine
         window?.makeKeyAndOrderFront(nil)
     }
     @objc private func chooseImages() { showWindow(); model.pickFiles() }
+    @objc func prepareFiles(_ pasteboard: NSPasteboard, userData: String?, error: AutoreleasingUnsafeMutablePointer<NSString?>) {
+        let urls = DragMonitor.files(from:pasteboard)
+        guard !urls.isEmpty else { error.pointee = "Choose files in Finder first."; return }
+        model.setSources(urls); showWindow()
+    }
+    func application(_ sender: NSApplication, openFiles filenames: [String]) { model.setSources(filenames.map { URL(fileURLWithPath:$0) }); showWindow(); sender.reply(toOpenOrPrint:.success) }
     @objc private func showWheel() { showWindow(); model.pickFiles(showWheel: true) }
     @objc private func showSettings() { model.page = .settings; showWindow() }
     @objc private func showActivity() { model.page = .activity; showWindow() }
@@ -69,7 +80,7 @@ import Combine
         item.button?.image?.isTemplate = true
         let menu = NSMenu()
         menu.addItem(menuItem("Open File Converter", action: #selector(showWindow)))
-        menu.addItem(menuItem("Choose images…", action: #selector(chooseImages)))
+        menu.addItem(menuItem("Choose files…", action: #selector(chooseImages)))
         menu.addItem(menuItem("Open conversion wheel…", action: #selector(showWheel)))
         menu.addItem(.separator())
         menu.addItem(menuItem("Activity", action: #selector(showActivity)))
@@ -77,7 +88,7 @@ import Combine
         menu.addItem(.separator()); menu.addItem(menuItem("Quit File Converter", action: #selector(quit), key: "q"))
         item.menu = menu; statusItem = item
         model.$isProcessing.sink { [weak item] working in
-            item?.button?.toolTip = working ? "Converting images…" : "File Converter · Hold Shift and drag an image"
+            item?.button?.toolTip = working ? "Processing files…" : "File Converter · Drag files with your wheel modifier"
         }.store(in: &subscriptions)
         let mainMenu = NSMenu()
         let appMenuItem = NSMenuItem(); let appMenu = NSMenu()
@@ -85,7 +96,7 @@ import Combine
         appMenu.addItem(.separator()); appMenu.addItem(menuItem("Quit File Converter", action: #selector(quit), key: "q"))
         appMenuItem.submenu = appMenu; mainMenu.addItem(appMenuItem)
         let fileItem = NSMenuItem(title: "File", action: nil, keyEquivalent: ""); let fileMenu = NSMenu(title: "File")
-        fileMenu.addItem(menuItem("Choose images…", action: #selector(chooseImages), key: "o"))
+        fileMenu.addItem(menuItem("Choose files…", action: #selector(chooseImages), key: "o"))
         fileMenu.addItem(menuItem("Open conversion wheel…", action: #selector(showWheel)))
         fileItem.submenu = fileMenu; mainMenu.addItem(fileItem)
         let editItem = NSMenuItem(title: "Edit", action: nil, keyEquivalent: ""); let editMenu = NSMenu(title: "Edit")

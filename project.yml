@@ -1,0 +1,95 @@
+name: FileConverter
+options:
+  bundleIdPrefix: io.local.file-converter
+  deploymentTarget:
+    macOS: "13.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    ARCHS: arm64
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    ENABLE_HARDENED_RUNTIME: YES
+    GENERATE_INFOPLIST_FILE: NO
+    CONVERTER_WORKER_SERVICE_IDENTIFIER: io.local.file-converter.worker.development
+packages:
+  ConverterPackage:
+    path: .
+targets:
+  FileConverter:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/FileConverter
+      - path: Configuration/EngineCatalog.json
+        buildPhase: resources
+      - path: Configuration/ThirdParty
+        type: folder
+        buildPhase: resources
+    info:
+      path: Configuration/App-Info.plist
+      properties:
+        CFBundleIdentifier: io.local.file-converter
+        CFBundleDisplayName: File Converter
+        CFBundleName: File Converter
+        CFBundleShortVersionString: "0.2.0"
+        CFBundleVersion: "2"
+        ConversionWorkerServiceName: "$(CONVERTER_WORKER_SERVICE_IDENTIFIER)"
+        LSUIElement: true
+        NSHighResolutionCapable: true
+        NSPrincipalClass: NSApplication
+        LSMinimumSystemVersion: "13.0"
+        NSServices:
+          - NSMenuItem:
+              default: Prepare in File Converter
+            NSMessage: prepareFiles
+            NSPortName: File Converter
+            NSSendTypes:
+              - public.file-url
+    dependencies:
+      - package: ConverterPackage
+        product: ConverterCore
+      - target: ConversionWorker
+        embed: true
+    settings:
+      base:
+        PRODUCT_NAME: File Converter
+        PRODUCT_BUNDLE_IDENTIFIER: io.local.file-converter
+  ConversionWorker:
+    type: xpc-service
+    platform: macOS
+    sources:
+      - Sources/ConverterWorker
+    dependencies:
+      - package: ConverterPackage
+        product: ConverterCore
+    info:
+      path: Configuration/Worker-Info.plist
+      properties:
+        CFBundleIdentifier: "$(CONVERTER_WORKER_SERVICE_IDENTIFIER)"
+        CFBundleName: ConversionWorker
+        CFBundleVersion: "2"
+        CFBundleShortVersionString: "0.2.0"
+        XPCService:
+          ServiceType: Application
+          RunLoopType: NSRunLoop
+    entitlements:
+      path: Configuration/Worker.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.files.user-selected.read-write: true
+        com.apple.security.files.bookmarks.app-scope: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: "$(CONVERTER_WORKER_SERVICE_IDENTIFIER)"
+schemes:
+  FileConverter:
+    build:
+      targets:
+        FileConverter: all
+    run:
+      config: Debug
+    archive:
+      config: Release

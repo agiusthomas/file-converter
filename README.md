@@ -1,52 +1,65 @@
 # File Converter
 
-A native, open-source macOS file converter with a Shift-drag conversion wheel, batch image conversion, and local processing. Built with SwiftUI, AppKit, and ImageIO. Licensed under [MIT](LICENSE).
+A native macOS utility for local conversion, compression, PDF page tools, archives, text, and media. Keep originals intact, prepare files in the Glacier workspace, or hold a configurable modifier while dragging files in Finder to open the quick-action wheel.
 
-The first build focuses on images. Requires macOS 13+ and Apple silicon; build with Xcode 26+ / the macOS 26 SDK. Apple silicon is the currently tested platform.
+Requires **macOS 13+ on Apple silicon**. Licensed under [MIT](LICENSE), with [third-party notices](docs/DEPENDENCIES.md).
 
-The Glacier theme follows the Mac’s light or dark appearance. The workspace and conversion wheel use native Liquid Glass on macOS 26+, with frosted material fallbacks on older releases. Reduce Transparency, Reduce Motion, and increased display contrast are respected.
+## Install
 
-## Run the app
+Download the signed and notarized **[0.2.0 preview DMG](https://github.com/agiusthomas/file-converter/releases/download/v0.2.0/File-Converter-0.2.0.dmg)**, open it, drag **File Converter** to **Applications**, eject the disk image, and open the app from Applications. No Xcode or command-line tools are needed to use it.
+
+See [installation, first-use, update, and removal instructions](docs/INSTALLATION.md). This preview includes built-in conversions; optional engine packs are not yet published.
+
+## Run
+
+For source builds, use **Xcode 26+**. The project retains SwiftUI/AppKit and SwiftPM, with an Xcode app target embedding a sandboxed conversion worker.
 
 ```sh
 ./scripts/build-app.sh
 open "build/File Converter.app"
 ```
 
-The app stays in the menu bar after its window closes. Choose images in the window, drop images onto the drop area, or hold **Shift while dragging an image in Finder** and drop onto a format in the wheel. Quit other utilities using the same shortcut when testing it. The window's **Open wheel** button also supports click selection and arrow keys / Return / Escape.
+The app stays in the menu bar after its window closes. Add or drop files, choose an available action and output, preview the result, then run it. Results save beside originals unless you select a destination. Aggregations use the first source’s folder. Existing names receive a number. Activity records verified outputs, notices, errors, and interrupted work; retries are explicit.
 
-Current outputs on the development Mac: **JPG, PNG, HEIC, TIFF, AVIF, BMP, PDF**. Availability comes from the local ImageIO encoders. WebP encoding and other file families are not implemented yet. Multi-frame input can be exported as TIFF or PDF pages; playback timing is not retained. Single-image destinations reject multi-frame input instead of dropping frames silently.
+Included development capabilities:
 
-Results are reopened for validation and saved beside their originals. Existing filenames get a number; atomic exclusive publication prevents concurrent jobs from replacing one another. JPG/BMP flatten transparency onto white. Orientation is applied to pixels once, with output orientation normalized. Quality and supported metadata copying are configurable. The current limits are 256 MB input, 100 million total decoded pixels, and 1,000 pages/frames per job.
+- Images: native formats plus bundled still WebP encoding, crop/rotate/resize/background, multiple outputs, GPS-property removal, and measured size limits.
+- PDF: page thumbnails/order/rotation/removal, merge/split, page images, image-to-PDF, text extraction, passwords, local OCR, searchable PDF, and explicitly destructive image-downsampling compression.
+- Native audio/video: compatible MP4 H.264/HEVC, M4A AAC, WAV PCM, trim, resize/crop/rotate, mute/speed, matching joins, audio extraction, and frame export. Actual input/export support depends on macOS.
+- ZIP, TAR, TAR.GZ and tested 7z creation/extraction through system libarchive, safe-member checks, and selective extraction. RAR reading depends on the system library and has not passed a RAR fixture corpus.
+- Plain text encodings/line endings, CSV/TSV preserving textual cell values, and SRT/VTT timing conversion.
+- Saved recipes with ordered processing and multiple exports, opt-in stable-file watchers, result shelf/drag-out/copy, Services integration, and a Shortcuts conversion action.
 
-This is a local development build signed ad hoc. Conversion currently runs in an actor in the app process; worker isolation, crash recovery, App Store packaging and the rest of the conversion catalog remain planned work.
+Optional adapters cover FFmpeg media, LibreOffice/Pandoc documents and spreadsheets, Calibre ebooks, and whisper.cpp transcription. **Signed packs have not been published.** Missing-pack actions remain discoverable; the wheel offers installed usable actions. The app does not import executable tools from other installed applications. All installed conversions run locally; network use is limited to explicit pack downloads.
 
-## Build and verify
+Version 0.2.0 is a **Developer ID signed and notarized preview**, with hardened runtime and a secure timestamp. Its stapled ticket passes Gatekeeper assessment. The full expansion has open work and release gates, including signed-pack execution, minimum-OS testing and physical Finder gestures. Preview distribution does not declare those gates complete. See [implementation status](IMPLEMENTATION.md), [capabilities](docs/CAPABILITIES.md), and [remaining milestones](docs/ROADMAP.md).
+
+## Verify
 
 ```sh
 ./scripts/swift-local.sh test
+FILE_CONVERTER_MEDIA_TESTS=1 ./scripts/swift-local.sh test
 ./scripts/build-app.sh release
 ```
 
-`swift-local.sh` keeps compiler/package caches inside the workspace and avoids a nested SwiftPM manifest sandbox, for compatibility with restricted development environments. The package has no external dependencies or build plugins.
+The media/OCR integration tests need normal access to macOS encoder and recognition services. Optional development-engine tests additionally use `FILE_CONVERTER_EXTERNAL_TESTS=1`; they skip when their explicitly configured tools are absent. These tests inject adapters only in the test target and do not bypass production signature verification. The suite generates its fixtures.
 
-The tests cover orientation, alpha, metadata selection, multi-page input, malformed data, concurrent output publication, capability intersections, wheel hit testing, and the Shift-before/during-drag state machine. The physical Finder gesture needs a manual check because the current UI automation tool cannot reliably hold Shift across a drag.
+`scripts/swift-local.sh` keeps package/compiler caches in the workspace. Bundled libwebp builds from pinned C source; no package downloads or build plugins are required. The generated Xcode project is checked in; regenerate it from `project.yml` with XcodeGen when adding app sources or resources.
 
-## Command-line conversion
+## CLI
 
 ```sh
 .build/debug/convert-file capabilities
-.build/debug/convert-file convert --to jpg /absolute/path/image.png
-.build/debug/convert-file convert --to pdf --output /absolute/path/folder image1.png image2.png
+.build/debug/convert-file inspect /path/file.pdf
+.build/debug/convert-file actions /path/file.pdf
+.build/debug/convert-file convert --to jpg --quality 0.9 /path/image.png
+.build/debug/convert-file run --action pdf.export --to png --pages 3,1,2 --dpi 144 /path/file.pdf
+.build/debug/convert-file run --action archive.create --to zip /path/first /path/second
+.build/debug/convert-file run --action subtitle.convert --to vtt --offset 1.5 /path/captions.srt
+.build/debug/convert-file recipe run /path/recipe.json /path/input.png
+.build/debug/convert-file jobs --recover
 ```
 
-Each source creates its own output. Use `--quality 0.9` or `--strip-metadata` as needed. `--strip-metadata` omits source properties; it is not a forensic metadata-cleaning service. HEIC/AVIF need access to macOS encoder services, which may be blocked by an additional command sandbox even when the desktop app can encode them.
+Generic requests accept `--options OPTIONS.json` for typed options. Inspection, capability, generic output manifests, recipes, and history use versioned JSON; legacy image `convert` retains its original result fields. The standalone development CLI uses a separate worker process. Desktop parsing and conversion use the sandboxed XPC service. Passwords are excluded from persisted jobs and exported recipes. Metadata copying/removal is format-specific; removing GPS properties does not erase arbitrary location-bearing text.
 
-## Project status
-
-- [Current build and verification](IMPLEMENTATION.md)
-- [Architecture and roadmap](docs/ROADMAP.md)
-- [Contributing](CONTRIBUTING.md)
-- [MIT license](LICENSE)
-
-CI runs the test suite and builds the app on macOS. Broader format support, media tools, document conversion and native file actions are planned; the roadmap is not a claim of implemented support. Development research, third-party application artifacts, personal samples and generated builds are excluded from this source repository.
+Build distributable engines with [the pack producer workflow](docs/ENGINE_PACKS.md). Production app packaging uses `scripts/release-app.sh` with a Developer ID identity and stored notarization profile. Scripts also read the ignored `Configuration/Signing.local.plist` for `identity`, `team`, and optional `notaryProfile` / `notaryKeychain` identifiers; explicit `CONVERTER_*` environment variables take precedence. No passwords or private keys belong in this file or repository. Signing and trust checks require normal macOS keychain access; a restricted command sandbox may hide configured identities.

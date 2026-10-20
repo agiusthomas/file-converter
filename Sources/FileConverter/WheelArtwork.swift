@@ -34,11 +34,13 @@ struct WheelPetal: Shape {
 }
 
 struct WheelArtwork: View {
-    let formats: [ImageFormat]
+    let labels: [String]
     let selected: Int?
     let title: String
     let subtitle: String
     var showsFormatLabels = false
+    init(formats: [ImageFormat], selected: Int?, title: String, subtitle: String, showsFormatLabels: Bool = false) { self.labels = formats.map(\.title); self.selected = selected; self.title = title; self.subtitle = subtitle; self.showsFormatLabels = showsFormatLabels }
+    init(labels: [String], selected: Int?, title: String, subtitle: String, showsFormatLabels: Bool = false) { self.labels = labels; self.selected = selected; self.title = title; self.subtitle = subtitle; self.showsFormatLabels = showsFormatLabels }
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorSchemeContrast) private var contrast
 
@@ -49,8 +51,8 @@ struct WheelArtwork: View {
             ZStack {
                 GlacierGlassGroup {
                     ZStack {
-                        ForEach(formats.indices, id: \.self) { index in
-                            GlacierGlass(shape: WheelPetal(index: index, count: formats.count), selected: selected == index)
+                        ForEach(labels.indices, id: \.self) { index in
+                            GlacierGlass(shape: WheelPetal(index: index, count: labels.count), selected: selected == index)
                                 .shadow(color: .black.opacity(0.13), radius: 7 * scale, y: 3 * scale)
                         }
                         GlacierGlass(shape: Circle())
@@ -61,10 +63,10 @@ struct WheelArtwork: View {
                 if let selected {
                     // Keep this outside the glass container: macOS desaturates
                     // the container's tint when the panel does not activate.
-                    WheelPetal(index: selected, count: formats.count)
+                    WheelPetal(index: selected, count: labels.count)
                         .fill(Theme.selection.opacity(0.94))
                         .overlay {
-                            WheelPetal(index: selected, count: formats.count)
+                            WheelPetal(index: selected, count: labels.count)
                                 .stroke(contrast == .increased ? Color.white : Theme.accent.opacity(0.8), lineWidth: contrast == .increased ? 2 : 1)
                         }
                 }
@@ -77,9 +79,9 @@ struct WheelArtwork: View {
                 .frame(width: 112 * scale)
                 .position(centre)
                 if showsFormatLabels {
-                    ForEach(Array(formats.enumerated()), id: \.offset) { index, format in
-                        let angle = -Double.pi / 2 + Double(index) * 2 * .pi / Double(formats.count)
-                        Text(format.title)
+                    ForEach(Array(labels.enumerated()), id: \.offset) { index, format in
+                        let angle = -Double.pi / 2 + Double(index) * 2 * .pi / Double(labels.count)
+                        Text(format)
                             .font(.system(size: 17 * scale, weight: .bold, design: .monospaced))
                             .foregroundStyle(selected == index ? .white : Theme.ink)
                             .position(x: centre.x + cos(angle) * 126 * scale, y: centre.y + sin(angle) * 126 * scale)

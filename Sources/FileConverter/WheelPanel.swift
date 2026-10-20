@@ -4,12 +4,22 @@ import ConverterCore
 
 @MainActor final class WheelPanelController {
     private var panel: NSPanel?
-    let registry = CapabilityRegistry()
-    var onConversion: (([URL], ImageFormat) -> Void)?
+    var inspect: (([URL]) async throws -> [AssetDescriptor])?
+    var installedPacks: Set<String> = []
+    private var inspection: Task<Void,Never>?
+    private var generation = UUID()
+    var onConversion: (([URL], WheelChoice) -> Void)?
     func show(sources: [URL], at point: NSPoint, clickable: Bool = false) {
-        let formats = registry.destinations(for: sources)
-        guard !formats.isEmpty else { return }
         dismiss()
+        let id = UUID(); generation = id
+        inspection = Task { [weak self] in
+            guard let self, let inspect, let assets = try? await inspect(sources), !Task.isCancelled, generation == id else { return }
+            let formats = WheelChoice.common(assets,installedPacks:installedPacks)
+            guard !formats.isEmpty else { return }
+            present(sources:sources,formats:formats,at:point,clickable:clickable)
+        }
+    }
+    private func present(sources: [URL], formats: [WheelChoice], at point: NSPoint, clickable: Bool) {
         let size = NSSize(width: 420, height: 420)
         let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }) ?? NSScreen.main
         let bounds = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
@@ -30,14 +40,14 @@ import ConverterCore
         panel.orderFrontRegardless()
         if clickable { panel.makeKey(); panel.makeFirstResponder(wheel) }
     }
-    func dismiss() { panel?.orderOut(nil); panel = nil }
+    func dismiss() { inspection?.cancel(); inspection = nil; generation = UUID(); panel?.orderOut(nil); panel = nil }
 }
 
 private final class WheelPanel: NSPanel { override var canBecomeKey: Bool { true } }
 
 @MainActor private final class WheelView: NSView {
     let sources: [URL]
-    let formats: [ImageFormat]
+    let formats: [WheelChoice]
     var selected: Int? {
         didSet {
             guard selected != oldValue else { return }
@@ -45,14 +55,14 @@ private final class WheelPanel: NSPanel { override var canBecomeKey: Bool { true
             updateButtons()
         }
     }
-    var onChoose: (([URL], ImageFormat) -> Void)?
+    var onChoose: (([URL], WheelChoice) -> Void)?
     var onCancel: (() -> Void)?
     private let artworkState = WheelArtworkState()
     private var labelButtons: [NSButton] = []
     private var tracking: NSTrackingArea?
     private var geometry: WheelGeometry { WheelGeometry(count: formats.count) }
     override var acceptsFirstResponder: Bool { true }
-    init(frame: NSRect, sources: [URL], formats: [ImageFormat]) {
+    init(frame: NSRect, sources: [URL], formats: [WheelChoice]) {
         self.sources = sources; self.formats = formats
         super.init(frame: frame)
         registerForDraggedTypes([.fileURL])
@@ -69,7 +79,7 @@ private final class WheelPanel: NSPanel { override var canBecomeKey: Bool { true
             button.isBordered = false; button.font = .monospacedSystemFont(ofSize: 14, weight: .bold)
             button.frame = NSRect(x: centre.x - 39, y: centre.y - 16, width: 78, height: 32)
             button.tag = index; button.setAccessibilityLabel("Convert to \(format.title)")
-            button.toolTip = "Convert \(sources.count == 1 ? "image" : "images") to \(format.title)"
+            button.toolTip = "\(format.title) for \(sources.count) files"
             addSubview(button); labelButtons.append(button)
         }
         updateButtons()
@@ -109,7 +119,7 @@ private final class WheelPanel: NSPanel { override var canBecomeKey: Bool { true
         selected = index(at: convert(sender.draggingLocation, from: nil)); return selected != nil
     }
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        guard let selected, CapabilityRegistry().destinations(for: DragMonitor.files(from: sender.draggingPasteboard)).contains(formats[selected]) else { return false }
+        guard let selected, DragMonitor.files(from: sender.draggingPasteboard) == sources else { return false }
         let urls = DragMonitor.files(from: sender.draggingPasteboard)
         onChoose?(urls, formats[selected]); return true
     }
@@ -132,10 +142,10 @@ private final class WheelPanel: NSPanel { override var canBecomeKey: Bool { true
 private struct LiveWheelArtwork: View {
     @ObservedObject var state: WheelArtworkState
     let sources: [URL]
-    let formats: [ImageFormat]
+    let formats: [WheelChoice]
 
     var body: some View {
-        WheelArtwork(formats: formats, selected: state.selected,
+        WheelArtwork(labels: formats.map(\.title), selected: state.selected,
                      title: state.selected.map { formats[$0].title }
                         ?? (sources.count == 1 ? sources[0].pathExtension.uppercased() : "\(sources.count) FILES"),
                      subtitle: state.selected == nil ? "Choose format" : "Drop to convert")
