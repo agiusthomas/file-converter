@@ -1,5 +1,7 @@
 # File Converter
 
+Development continuation: [completion plan](docs/CONTINUATION_PLAN.md) · [new-conversation handoff](docs/NEW_CONVERSATION.md). The full seven-milestone expansion remains unfinished.
+
 A native macOS utility for local conversion, compression, PDF page tools, archives, text, and media. Keep originals intact, prepare files in the Glacier workspace, or hold a configurable modifier while dragging files in Finder to open the quick-action wheel.
 
 Requires **macOS 13+ on Apple silicon**. Licensed under [MIT](LICENSE), with [third-party notices](docs/DEPENDENCIES.md).

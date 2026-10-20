@@ -1,5 +1,7 @@
 # Implementation status — 20 October 2026
 
+Continue implementation using [the completion plan](docs/CONTINUATION_PLAN.md). A [ready-to-paste handoff](docs/NEW_CONVERSATION.md) carries the task into a new conversation. The plan separates working built-in features, adapter-only work, unavailable runtime packs and unverified acceptance gates.
+
 ## Preview build 0.2.0
 
 The repository now contains a working expansion across the shared foundation, images/PDF, native media, archives/text, and Mac workflows. Optional engine adapters and a verified-pack lifecycle are implemented. **The seven-milestone plan is not fully complete and no public release gate is declared passed.** Signed third-party execution, minimum-OS testing, physical Finder gestures, and several advanced features remain open below.
