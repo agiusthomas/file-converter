@@ -16,6 +16,8 @@ Resume the unchecked milestone 1 contract/fault/activation/download failure matr
 
 Developer ID and notarization already work locally through the ignored `Configuration/Signing.local.plist`, Keychain profile and existing scripts. Reuse that setup securely; do not ask for private keys/passwords or commit local settings. Restricted command environments can hide macOS signing identities; distinguish that from genuinely missing configuration. The existing v0.2.0 DMG/app are notarized, and the baseline 58-test suite and GitHub build passed. The expanded 64-test suite also passes with opt-in checks enabled. Those checks do not prove the other missing packs or remaining acceptance gates.
 
+For future releases, read `docs/RELEASING.md`: it records the successful 0.2.1 signing/notarization/packaging flow, secure setup, immutable version/checksum rules, exact-commit CI check, GitHub draft/publication commands and final verification. Reuse the existing setup and keep unfinished milestone gates explicit.
+
 Implement the remaining work, run relevant checks, and keep the continuation plan and implementation evidence current. Report what is implemented, verified, shipped, experimental or blocked separately. Preserve published v0.2.0 artifacts; changed app/pack artifacts need new versions. Do not publish a milestone as complete before its acceptance gate passes. Ask for clarification only for genuine blockers or decisions that cannot be resolved from the approved plan and repository.
 
 ---
