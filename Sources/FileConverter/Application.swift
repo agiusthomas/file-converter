@@ -31,6 +31,7 @@ import Combine
         configureMenus()
         NSApplication.shared.servicesProvider = self
         model.onShowWindow = { [weak self] in self?.showWindow() }
+        wheel.sounds = model.sounds
         model.onWheelSettingChanged = { [weak self] enabled in
             if enabled { self?.monitor.start() } else { self?.monitor.stop() }
         }

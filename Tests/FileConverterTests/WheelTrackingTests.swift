@@ -35,6 +35,47 @@ final class WheelTrackingTests: XCTestCase {
         }
     }
 
+    @MainActor func testSoundFeedbackFollowsChangedOptionsAcrossPointerMouseAndKeyboard() async {
+        let context = SoundTestContext(); defer { context.cleanUp() }
+        var time = 10.0
+        let sounds = context.makeSounds(now: { time })
+        withWheel(at: NSPoint(x: 100, y: 100)) { wheel, window in
+            wheel.onSelectionChanged = { sounds.wheelOptionChanged() }
+            sounds.wheelOpened(); time += 0.1
+            let top = window.convertPoint(toScreen: wheel.convert(NSPoint(x: 210, y: 336), to: nil))
+            for _ in 0..<10 { wheel.updateDragHighlight(at: top) }
+            XCTAssertEqual(context.playback.played, [.opening, .tick])
+            time += 0.1
+            wheel.updateDragHighlight(at: window.convertPoint(toScreen: NSPoint(x: 210, y: 210)))
+            XCTAssertEqual(context.playback.played.count, 2)
+            wheel.updateDragHighlight(at: top)
+            XCTAssertEqual(context.playback.played.count, 3)
+            time += 0.1
+            let angle = 2 * Double.pi / Double(wheel.formats.count)
+            let mousePoint = NSPoint(x: 210 + sin(angle) * 126, y: 210 + cos(angle) * 126)
+            let mouse = NSEvent.mouseEvent(with: .mouseMoved, location: mousePoint, modifierFlags: [],
+                timestamp: 0, windowNumber: window.windowNumber, context: nil, eventNumber: 0, clickCount: 0, pressure: 0)!
+            wheel.mouseMoved(with: mouse)
+            XCTAssertEqual(wheel.selected, 1)
+            XCTAssertEqual(context.playback.played.count, 4)
+            time += 0.1
+            let right = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: 0,
+                windowNumber: window.windowNumber, context: nil, characters: "", charactersIgnoringModifiers: "", isARepeat: false, keyCode: 124)!
+            wheel.keyDown(with: right)
+            XCTAssertEqual(wheel.selected, 2)
+            XCTAssertEqual(context.playback.played.count, 5)
+            var choices = 0
+            wheel.onChoose = { _, _ in choices += 1; sounds.wheelDismissed() }
+            let enter = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: 0,
+                windowNumber: window.windowNumber, context: nil, characters: "\r", charactersIgnoringModifiers: "\r", isARepeat: false, keyCode: 36)!
+            wheel.keyDown(with: enter)
+            time += 1
+            wheel.completeDrag(at: top)
+            XCTAssertEqual(choices, 1)
+            XCTAssertEqual(context.playback.played.count, 5)
+        }
+    }
+
     @MainActor func testPointerLeavingSectorClearsHighlightAndCanReenter() async {
         withWheel(at: NSPoint(x: 100, y: 100)) { wheel, window in
             @MainActor func sample(_ point: NSPoint) {
@@ -119,6 +160,8 @@ final class WheelTrackingTests: XCTestCase {
         }
         _ = NSApplication.shared
         let controller = WheelPanelController()
+        let soundContext = SoundTestContext(); defer { soundContext.cleanUp() }
+        controller.sounds = soundContext.makeSounds()
         defer { controller.dismiss() }
         let source = URL(fileURLWithPath: "/tmp/wheel-release.jpg")
         controller.inspect = { urls in
@@ -137,6 +180,7 @@ final class WheelTrackingTests: XCTestCase {
             try await Task.sleep(nanoseconds: 10_000_000)
         }
         let panel = try XCTUnwrap(controller.panel)
+        XCTAssertEqual(soundContext.playback.played, [.opening])
         let wheel = try XCTUnwrap(panel.contentView as? WheelView)
         // Allow the window server to commit the new panel before hit testing.
         try await Task.sleep(nanoseconds: 150_000_000)

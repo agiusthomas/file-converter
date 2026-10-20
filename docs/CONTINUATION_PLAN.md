@@ -1,8 +1,10 @@
 # Glacier File Converter — completion plan
 
+**Latest patch: Glacier File Converter 1.0.1 (build 5)** adds Soft Detent opening/selection/success cues, saved sound preferences and a preview control. Glacier Glass and Warm Minimal are preserved with playable previews in `docs/sounds/`. Batch confirmation follows explicit user actions, including overlapping batches and recipes; failures, cancellation, previews and background watchers stay silent. See [1.0.1 release notes](releases/1.0.1.md) and [release evidence](evidence/app-1.0.1-release.json). This patch does not close any expansion milestone.
+
 **Glacier File Converter 1.0.0** (build 4) is the first official release, requested by the user, including the faceted ice icon, unchanged interface colors/layout and recent Finder-wheel/background-conversion fixes. Build output is `build/Glacier File Converter.app`; downloads start with `Glacier-File-Converter-`. Preserve bundle/worker identifiers and existing storage paths; historical release artifacts keep their original names. This official release does not close the unfinished expansion milestones. See [release notes](releases/1.0.0.md).
 
-Updated 20 October 2026. This is the execution plan for finishing the approved seven-milestone expansion. Read it alongside [implementation evidence](../IMPLEMENTATION.md), the [roadmap](ROADMAP.md), and the [new-conversation handoff](NEW_CONVERSATION.md).
+Updated 21 October 2026. This is the execution plan for finishing the approved seven-milestone expansion. Read it alongside [implementation evidence](../IMPLEMENTATION.md), the [roadmap](ROADMAP.md), and the [new-conversation handoff](NEW_CONVERSATION.md).
 
 ## Objective and current truth
 

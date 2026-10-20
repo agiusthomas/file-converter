@@ -23,7 +23,8 @@ final class WheelBackgroundConversionTests: XCTestCase {
         }
         let originalHashes = try sources.map { try FileDigest.sha256($0) }
         let coordinator = JobCoordinator(transport: InProcessWorkerTransport(), journal: root.appendingPathComponent("Jobs"))
-        let model = AppModel(coordinator: coordinator)
+        let soundContext = SoundTestContext(); defer { soundContext.cleanUp() }
+        let model = AppModel(coordinator: coordinator, sounds: soundContext.makeSounds())
         // Workspace destination settings must not redirect quick Finder actions.
         model.destination = root.appendingPathComponent("Other destination")
         var windowRequests = 0

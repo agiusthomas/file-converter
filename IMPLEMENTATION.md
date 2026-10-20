@@ -2,6 +2,12 @@
 
 Continue implementation using [the completion plan](docs/CONTINUATION_PLAN.md). A [ready-to-paste handoff](docs/NEW_CONVERSATION.md) carries the task into a new conversation. The plan separates working built-in features, adapter-only work, unavailable runtime packs and unverified acceptance gates.
 
+## Glacier File Converter 1.0.1
+
+Version 1.0.1 (build 5) is a small sound-feedback patch. Soft Detent cues play when the wheel appears, when a changed valid option is entered by drag/mouse/keyboard, and once per fully successful manual conversion batch or recipe. Ticks are limited to one per 60 ms, suppressed for the first 80 ms, and discarded rather than queued. Settings saves a sound toggle and volume (30% default), and provides a cancellable sequence preview. Missing audio is harmless. The active set is preloaded locally; Glacier Glass and Warm Minimal are retained with their original previews in `docs/sounds/`.
+
+Explicit batches are tracked independently of queue drains/history; only persisted submissions enter the executable queue, and jobs arriving during history refresh are not stranded. Partial failures, submission failures, cancellation, previews, watched folders and background coordinator calls never produce success feedback. Tests cover these cases, rapid movement, preference persistence, preview interruption and duplicate callbacks. See [release notes](docs/releases/1.0.1.md) and [distribution evidence](docs/evidence/app-1.0.1-release.json) for exact qualification. Existing expansion gaps remain open.
+
 ## Glacier File Converter 1.0.0
 
 Version 1.0.0 (build 4) is the first official release requested by the user. It includes all prior conversion features, engine management and the recent Finder-wheel fixes from `1d34af8`: independent hover/selection tracking, release fallback when native callbacks are absent, duplicate-submission prevention, Escape/neutral-drop cancellation and direct conversion without opening the workspace.

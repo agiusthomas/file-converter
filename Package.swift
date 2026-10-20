@@ -15,7 +15,7 @@ let package = Package(
         .target(name: "WebPBridge", exclude: ["libwebp/COPYING", "libwebp/PATENTS", "libwebp/AUTHORS"], publicHeadersPath: "include", cSettings: [.headerSearchPath("libwebp"), .headerSearchPath("libwebp/src")]),
         .target(name: "ConverterCore", dependencies: ["ArchiveBridge", "WebPBridge"]),
         .executableTarget(name: "ConverterWorker", dependencies: ["ConverterCore"]),
-        .executableTarget(name: "FileConverter", dependencies: ["ConverterCore"]),
+        .executableTarget(name: "FileConverter", dependencies: ["ConverterCore"], resources: [.copy("Resources/Sounds")]),
         .executableTarget(name: "ConverterCLI", dependencies: ["ConverterCore"]),
         .testTarget(name: "ConverterCoreTests", dependencies: ["ConverterCore"]),
         .testTarget(name: "FileConverterTests", dependencies: ["FileConverter"])

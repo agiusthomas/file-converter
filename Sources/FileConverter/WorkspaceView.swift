@@ -315,9 +315,26 @@ struct WorkspaceView: View {
                 Picker("Wheel modifier",selection:$model.modifier) { Text("Shift").tag("shift"); Text("Option").tag("option"); Text("Control").tag("control") }
                 Toggle("Open at login",isOn:Binding(get:{model.launchAtLogin},set:model.setLogin))
             }.padding(18).modifier(GlacierCard())
+            SoundSettingsView(sounds: model.sounds)
             VStack(alignment:.leading,spacing:14) { Text("Output access").font(.headline); Text("Results are saved beside originals unless you choose another folder. Existing names receive a number.").font(.callout).foregroundStyle(.secondary); HStack { Button("Allow a folder…") { model.allowOutputFolder() }; Button("Revoke saved folder access") { FolderGrants.shared.revokeAll(); model.destination = nil } } }.padding(18).modifier(GlacierCard())
             Text("\(GlacierBrand.name) · \(GlacierBrand.versionDescription)\nJob history stays on this Mac. Passwords are excluded from saved jobs and recipes.").font(.caption).foregroundStyle(.secondary)
         }
+    }
+}
+private struct SoundSettingsView: View {
+    @ObservedObject var sounds: SoundFeedback
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Toggle("Sound effects", isOn: $sounds.enabled)
+            Text("Soft Detent · quiet wheel clicks and a sound when your conversion finishes.")
+                .font(.callout).foregroundStyle(.secondary)
+            HStack {
+                Slider(value: $sounds.volume, in: 0...1) { Text("Sound volume") }
+                Text(sounds.volume, format: .percent.precision(.fractionLength(0)))
+                    .monospacedDigit().frame(width: 42, alignment: .trailing)
+                Button("Preview sounds") { sounds.preview() }.disabled(sounds.volume == 0)
+            }.disabled(!sounds.enabled)
+        }.padding(18).modifier(GlacierCard())
     }
 }
 private struct JobRow: View {

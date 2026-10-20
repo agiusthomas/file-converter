@@ -7,6 +7,7 @@ enum WorkspacePage: String, CaseIterable { case convert = "Convert", activity = 
 @MainActor final class AppModel: ObservableObject {
     let registry = CapabilityRegistry()
     let coordinator: JobCoordinator
+    let sounds: SoundFeedback
     @Published var page: WorkspacePage = .convert
     @Published var sources: [URL] = []
     @Published var assets: [AssetDescriptor] = []
@@ -57,6 +58,8 @@ enum WorkspacePage: String, CaseIterable { case convert = "Convert", activity = 
     private var inspectionTask: Task<Void,Never>?
     private var selectionID = UUID()
     private var pending: [OperationRequest] = []
+    private var submissionsInFlight = 0
+    private var soundBatches = ConversionSoundBatches()
     private var recipeTask: Task<Void,Never>?
     var actions: [ActionDescriptor] { ActionCatalog.actions(for:assets,installedPacks:Set(packs.map(\.id))) }
     var action: ActionDescriptor? { actions.first { $0.id == selectedAction } }
@@ -66,7 +69,8 @@ enum WorkspacePage: String, CaseIterable { case convert = "Convert", activity = 
     var failedCount: Int { jobs.filter { [.failed,.interrupted].contains($0.state) }.count }
     var activeCount: Int { jobs.filter { ![.succeeded,.failed,.cancelled,.interrupted].contains($0.state) }.count }
     var progress: Double { jobs.isEmpty ? 0 : Double(jobs.count-activeCount)/Double(jobs.count) }
-    init(coordinator: JobCoordinator? = nil) {
+    init(coordinator: JobCoordinator? = nil, sounds: SoundFeedback? = nil) {
+        self.sounds = sounds ?? SoundFeedback()
         UserDefaults.standard.register(defaults:["wheelEnabled":true,"wheelModifier":"shift","quality":0.9,"preserveMetadata":true])
         wheelEnabled = UserDefaults.standard.bool(forKey:"wheelEnabled"); modifier = UserDefaults.standard.string(forKey:"wheelModifier") ?? "shift"
         let installed = EnginePacks.installed(); packs = installed
@@ -126,7 +130,15 @@ enum WorkspacePage: String, CaseIterable { case convert = "Convert", activity = 
         var settings = options; settings.minimumQuality = min(settings.quality,settings.minimumQuality)
         let chosen = [profile] + profiles.filter { additionalProfiles.contains($0.id) && $0.id != profile.id }
         if action.cardinality == .aggregate { enqueue(OperationRequest(inputs:sources,action:action.id,profiles:chosen,options:settings,destination:destination)) }
-        else { for (index,source) in sources.enumerated() { var perFile = settings; perFile.sequence = index+1; var request = OperationRequest(inputs:[source],action:action.id,profiles:chosen,options:perFile,destination:destination); request.relativeSourceRoot = relativeSourceRoot; enqueue(request) } }
+        else {
+            let requests = sources.enumerated().map { index, source in
+                var perFile = settings; perFile.sequence = index+1
+                var request = OperationRequest(inputs:[source],action:action.id,profiles:chosen,options:perFile,destination:destination)
+                request.relativeSourceRoot = relativeSourceRoot
+                return request
+            }
+            enqueueBatch(requests)
+        }
     }
     func cancelPreview() { previewTask?.cancel(); previewTask = nil; isPreviewing = false; resultPreviewURL = nil; previewSummary = nil; if let previewDirectory { try? FileManager.default.removeItem(at:previewDirectory) }; previewDirectory = nil }
     func previewResult() {
@@ -166,34 +178,85 @@ enum WorkspacePage: String, CaseIterable { case convert = "Convert", activity = 
     }
     func performWheel(_ urls: [URL], choice: WheelChoice) {
         if choice.needsOptions { setSources(urls); selectedAction = choice.action; selectedProfileID = choice.profile.id; onShowWindow?(); return }
-        if choice.aggregate { enqueue(OperationRequest(inputs:urls,action:choice.action,profiles:[choice.profile]), showWindow: false) }
-        else { for url in urls { enqueue(OperationRequest(inputs:[url],action:choice.action,profiles:[choice.profile]), showWindow: false) } }
+        let requests = choice.aggregate
+            ? [OperationRequest(inputs:urls,action:choice.action,profiles:[choice.profile])]
+            : urls.map { OperationRequest(inputs:[$0],action:choice.action,profiles:[choice.profile]) }
+        enqueueBatch(requests, showWindow: false)
     }
     func enqueue(_ request: OperationRequest, showWindow: Bool = true) {
-        guard !isCancelling else { return }; pending.append(request); jobs.append(JobRecord(request:request))
+        enqueueBatch([request], showWindow: showWindow)
+    }
+    private func enqueueBatch(_ requests: [OperationRequest], showWindow: Bool = true) {
+        guard !isCancelling, !requests.isEmpty else { return }
+        soundBatches.register(requests.map(\.id))
+        jobs.append(contentsOf: requests.map { JobRecord(request: $0) })
+        submissionsInFlight += 1; isProcessing = true
         if showWindow { onShowWindow?() }
         message = nil
         Task {
-            do { try await coordinator.submit(request); if pending.contains(where:{$0.id == request.id}) { startQueue() } else { try await coordinator.cancelSubmitted(request.id) } }
-            catch { pending.removeAll {$0.id == request.id}; if let index = jobs.firstIndex(where:{$0.id == request.id}) { jobs[index].state = .failed; jobs[index].error = error.localizedDescription } }
+            for request in requests {
+                do {
+                    try await coordinator.submit(request)
+                    if isCancelling {
+                        try await coordinator.cancelSubmitted(request.id)
+                        if let index = jobs.firstIndex(where: { $0.id == request.id }) { jobs[index].state = .cancelled }
+                        finishSoundJob(request.id, succeeded: false)
+                    } else {
+                        // Only executable, persisted requests enter the queue. Other
+                        // batches may still be submitting while the queue is running.
+                        pending.append(request)
+                    }
+                } catch {
+                    if let index = jobs.firstIndex(where: { $0.id == request.id }) { jobs[index].state = .failed; jobs[index].error = error.localizedDescription }
+                    finishSoundJob(request.id, succeeded: false)
+                }
+            }
+            submissionsInFlight -= 1
+            startQueue()
+            updateProcessingState()
         }
     }
     private func startQueue() {
-        guard queueTask == nil else { return }; isProcessing = true
+        guard queueTask == nil, !pending.isEmpty else { return }; isProcessing = true
         queueTask = Task {
-            while !pending.isEmpty && !Task.isCancelled {
+            while !pending.isEmpty && !Task.isCancelled && !isCancelling {
                 let request = pending.removeFirst()
                 do {
                     let result = try await coordinator.run(request) { [weak self] state in Task { @MainActor in if let index = self?.jobs.firstIndex(where: { $0.id == request.id }), let current = self?.jobs[index].state, ![.succeeded,.failed,.cancelled,.interrupted].contains(current) { self?.jobs[index].state = state } } }
                     if let index = jobs.firstIndex(where: { $0.id == request.id }) { jobs[index].state = .succeeded; jobs[index].manifest = result }
-                } catch { if let index = jobs.firstIndex(where: { $0.id == request.id }) { jobs[index].state = error is CancellationError ? .cancelled : .failed; jobs[index].error = error.localizedDescription } }
+                    finishSoundJob(request.id, succeeded: !Task.isCancelled && !isCancelling)
+                } catch {
+                    if let index = jobs.firstIndex(where: { $0.id == request.id }) { jobs[index].state = error is CancellationError ? .cancelled : .failed; jobs[index].error = error.localizedDescription }
+                    finishSoundJob(request.id, succeeded: false)
+                }
             }
-            for request in pending { try? await coordinator.cancelSubmitted(request.id); if let index = jobs.firstIndex(where: { $0.id == request.id }) { jobs[index].state = .cancelled } }
-            pending = []; await refreshHistory(); isProcessing = false; isCancelling = false; queueTask = nil
+            if Task.isCancelled || isCancelling {
+                let cancelled = pending; pending = []
+                for request in cancelled {
+                    try? await coordinator.cancelSubmitted(request.id)
+                    if let index = jobs.firstIndex(where: { $0.id == request.id }) { jobs[index].state = .cancelled }
+                    finishSoundJob(request.id, succeeded: false)
+                }
+            }
+            await refreshHistory(); queueTask = nil
+            // Submissions can finish during history refresh. Do not strand them
+            // behind the queue task that was just winding down.
+            startQueue()
+            updateProcessingState()
             if engineRefreshPending { await refreshEngineLibrary() }
         }
     }
-    func cancel() { isCancelling = true; queueTask?.cancel(); recipeTask?.cancel() }
+    private func finishSoundJob(_ id: UUID, succeeded: Bool) {
+        if soundBatches.finish(id, succeeded: succeeded) { sounds.conversionSucceeded() }
+    }
+    private func updateProcessingState() {
+        isProcessing = queueTask != nil || recipeTask != nil || submissionsInFlight > 0 || !pending.isEmpty
+        if !isProcessing { isCancelling = false }
+    }
+    func cancel() {
+        isCancelling = true; soundBatches.cancelAll(); queueTask?.cancel(); recipeTask?.cancel()
+        updateProcessingState()
+    }
     func retry(_ job: JobRecord) {
         if let recipe = job.recipe { runRecipe(recipe,inputs:job.request.inputs,destination:job.request.destination,skippingExports:Set(job.completedRecipeExports ?? []),completedOutputs:job.manifest?.outputs ?? []) }
         else {
@@ -275,8 +338,15 @@ enum WorkspacePage: String, CaseIterable { case convert = "Convert", activity = 
     }
     func runRecipe(_ recipe: Recipe) { runRecipe(recipe,inputs:sources,destination:destination) }
     private func runRecipe(_ recipe: Recipe, inputs: [URL], destination: URL?, skippingExports: Set<Int> = [], completedOutputs: [OutputArtifact] = []) {
-        guard !inputs.isEmpty, recipeTask == nil else { return }; cancelPreview(); thumbnailTask?.cancel(); isLoadingPages = false; isProcessing = true
-        recipeTask = Task { do { _ = try await coordinator.run(recipe,inputs:inputs,destination:destination,skippingExports:skippingExports,completedOutputs:completedOutputs) } catch { message = error.localizedDescription }; await refreshHistory(); recipeTask = nil; isProcessing = queueTask != nil; isCancelling = false; if engineRefreshPending { await refreshEngineLibrary() } }
+        guard !inputs.isEmpty, recipeTask == nil, !isCancelling else { return }; cancelPreview(); thumbnailTask?.cancel(); isLoadingPages = false; isProcessing = true
+        recipeTask = Task {
+            do {
+                _ = try await coordinator.run(recipe,inputs:inputs,destination:destination,skippingExports:skippingExports,completedOutputs:completedOutputs)
+                if !Task.isCancelled && !isCancelling { sounds.conversionSucceeded() }
+            } catch { message = error.localizedDescription }
+            await refreshHistory(); recipeTask = nil; updateProcessingState()
+            if engineRefreshPending { await refreshEngineLibrary() }
+        }
     }
     func importPack() {
         guard engineTask == nil else { return }

@@ -11,6 +11,7 @@ import ConverterCore
     private var dragPresentation = false
     private var generation = UUID()
     var onConversion: (([URL], WheelChoice) -> Void)?
+    var sounds: SoundFeedback?
     func show(sources: [URL], at point: NSPoint, clickable: Bool = false) {
         dismiss()
         dragPresentation = !clickable
@@ -38,6 +39,7 @@ import ConverterCore
         panel.hidesOnDeactivate = false; panel.isReleasedWhenClosed = false
         panel.acceptsMouseMovedEvents = true
         let wheel = WheelView(frame: NSRect(origin: .zero, size: size), sources: sources, formats: formats)
+        wheel.onSelectionChanged = { [weak self] in self?.sounds?.wheelOptionChanged() }
         wheel.onChoose = { [weak self] selectedSources, format in
             self?.dismiss(); self?.onConversion?(selectedSources, format)
         }
@@ -45,6 +47,7 @@ import ConverterCore
         panel.contentView = wheel; self.panel = panel
         dragPresentation = !clickable
         panel.orderFrontRegardless()
+        sounds?.wheelOpened()
         if clickable {
             panel.makeKey(); panel.makeFirstResponder(wheel)
         } else {
@@ -81,6 +84,7 @@ import ConverterCore
         }
     }
     func dismiss() {
+        sounds?.wheelDismissed()
         pointerTimer?.invalidate(); pointerTimer = nil
         dragPresentation = false
         inspection?.cancel(); inspection = nil; generation = UUID(); panel?.orderOut(nil); panel = nil
@@ -97,10 +101,12 @@ private final class WheelPanel: NSPanel { override var canBecomeKey: Bool { true
             guard selected != oldValue else { return }
             artworkState.selected = selected
             updateButtons()
+            if selected != nil, !didChoose { onSelectionChanged?() }
         }
     }
     var onChoose: (([URL], WheelChoice) -> Void)?
     var onCancel: (() -> Void)?
+    var onSelectionChanged: (() -> Void)?
     private let artworkState = WheelArtworkState()
     private var labelButtons: [NSButton] = []
     private var tracking: NSTrackingArea?

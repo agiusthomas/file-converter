@@ -24,6 +24,11 @@ targets:
     productName: Glacier File Converter
     sources:
       - path: Sources/FileConverter
+        excludes:
+          - Resources
+      - path: Sources/FileConverter/Resources/Sounds
+        type: folder
+        buildPhase: resources
       - path: Configuration/Assets.xcassets
         buildPhase: resources
       - path: Configuration/EngineCatalog.json
@@ -37,8 +42,8 @@ targets:
         CFBundleIdentifier: io.local.file-converter
         CFBundleDisplayName: Glacier File Converter
         CFBundleName: Glacier File Converter
-        CFBundleShortVersionString: "1.0.0"
-        CFBundleVersion: "4"
+        CFBundleShortVersionString: "1.0.1"
+        CFBundleVersion: "5"
         ConversionWorkerServiceName: "$(CONVERTER_WORKER_SERVICE_IDENTIFIER)"
         LSUIElement: true
         NSHighResolutionCapable: true
@@ -74,8 +79,8 @@ targets:
       properties:
         CFBundleIdentifier: "$(CONVERTER_WORKER_SERVICE_IDENTIFIER)"
         CFBundleName: ConversionWorker
-        CFBundleVersion: "4"
-        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "5"
+        CFBundleShortVersionString: "1.0.1"
         XPCService:
           ServiceType: Application
           RunLoopType: NSRunLoop

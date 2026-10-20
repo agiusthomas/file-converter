@@ -15,6 +15,7 @@
 		2A74E5398C47908FFDD52A05 /* GlacierBrand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F2E24B32A72F38EE766978B /* GlacierBrand.swift */; };
 		2CCB29315AFF4A4FCE96AA32 /* ConverterCore in Frameworks */ = {isa = PBXBuildFile; productRef = 35D82C67053996AA0916070F /* ConverterCore */; };
 		311FF4FC890AF00A9B9BBADD /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A286AF8515B29677290DFCB /* AppModel.swift */; };
+		33CF7CD061E4BA5BEBD42F3C /* SoundFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55434A603A83D3F6CEA487CE /* SoundFeedback.swift */; };
 		38A5F4E9C92438B5B59C7284 /* DragMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A21E5A7C190F0BE390C142E /* DragMonitor.swift */; };
 		3A7702D9878A6E6EDA8EA036 /* ConversionWorker.xpc in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5E29BE091EA86B4E68325541 /* ConversionWorker.xpc */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3CC6018B76679C94C819C29F /* Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C66575F79E77E8B479DDB1E /* Shortcuts.swift */; };
@@ -27,6 +28,7 @@
 		D607D2C4A4233D8CFE1E5972 /* ConverterCore in Frameworks */ = {isa = PBXBuildFile; productRef = C955AB77EB04EF73B82A9F84 /* ConverterCore */; };
 		E4D12CBF5FF1BC5BEC81F085 /* WorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56214A18D68B81336EB391E4 /* WorkspaceView.swift */; };
 		F71A7F24762C692E759685A1 /* ThirdParty in Resources */ = {isa = PBXBuildFile; fileRef = 32CC12570FBB1CBBD7983140 /* ThirdParty */; };
+		F9881E4532689E79B6FAF72F /* Sounds in Resources */ = {isa = PBXBuildFile; fileRef = 02667220C8D86BA8339F06F0 /* Sounds */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,12 +56,14 @@
 
 /* Begin PBXFileReference section */
 		008F72B91F7756F42F0C1213 /* Glacier File Converter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Glacier File Converter.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		02667220C8D86BA8339F06F0 /* Sounds */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Sounds; path = Sources/FileConverter/Resources/Sounds; sourceTree = SOURCE_ROOT; };
 		08CDD14D35D31E22F32A43DC /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		0F2E24B32A72F38EE766978B /* GlacierBrand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlacierBrand.swift; sourceTree = "<group>"; };
 		14FA16F2F4F90C235DEFA87C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2810EA608D0364E118F5E7A0 /* EngineLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineLibraryView.swift; sourceTree = "<group>"; };
 		32CC12570FBB1CBBD7983140 /* ThirdParty */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ThirdParty; path = Configuration/ThirdParty; sourceTree = SOURCE_ROOT; };
 		477B919240E0D11A1005F802 /* RecipeEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeEditor.swift; sourceTree = "<group>"; };
+		55434A603A83D3F6CEA487CE /* SoundFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundFeedback.swift; sourceTree = "<group>"; };
 		56214A18D68B81336EB391E4 /* WorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceView.swift; sourceTree = "<group>"; };
 		5E29BE091EA86B4E68325541 /* ConversionWorker.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = ConversionWorker.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
 		66EF70C6B873C55C83EBCF7E /* GlacierTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlacierTheme.swift; sourceTree = "<group>"; };
@@ -104,6 +108,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		679A1864A7CB54D13EE64C83 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				02667220C8D86BA8339F06F0 /* Sounds */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		74AD6A2CD36FFDE3199FC3E2 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
@@ -134,9 +146,11 @@
 				66EF70C6B873C55C83EBCF7E /* GlacierTheme.swift */,
 				477B919240E0D11A1005F802 /* RecipeEditor.swift */,
 				7C66575F79E77E8B479DDB1E /* Shortcuts.swift */,
+				55434A603A83D3F6CEA487CE /* SoundFeedback.swift */,
 				95C7BF8F979D0E730BF5798D /* WheelArtwork.swift */,
 				A2E2C31365D8D8CF6F305EBB /* WheelPanel.swift */,
 				56214A18D68B81336EB391E4 /* WorkspaceView.swift */,
+				679A1864A7CB54D13EE64C83 /* Resources */,
 			);
 			path = FileConverter;
 			sourceTree = "<group>";
@@ -260,6 +274,7 @@
 			files = (
 				4ECA622A5C02481EA5248763 /* Assets.xcassets in Resources */,
 				2033F7DFB437F450F2692241 /* EngineCatalog.json in Resources */,
+				F9881E4532689E79B6FAF72F /* Sounds in Resources */,
 				F71A7F24762C692E759685A1 /* ThirdParty in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -280,6 +295,7 @@
 				28B75131B6C166A24A1CAC1F /* GlacierTheme.swift in Sources */,
 				CB1633D07D919FFE9257F349 /* RecipeEditor.swift in Sources */,
 				3CC6018B76679C94C819C29F /* Shortcuts.swift in Sources */,
+				33CF7CD061E4BA5BEBD42F3C /* SoundFeedback.swift in Sources */,
 				6D3781756B4A8FF2F9D93481 /* WheelArtwork.swift in Sources */,
 				0C49F207C7AB125788BE2866 /* WheelPanel.swift in Sources */,
 				E4D12CBF5FF1BC5BEC81F085 /* WorkspaceView.swift in Sources */,
