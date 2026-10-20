@@ -1,10 +1,10 @@
 # Install File Converter
 
-Requires macOS 13 Ventura or later on an Apple-silicon Mac (M1 or newer). Intel Macs are not supported by this build.
+Targets macOS 13 Ventura or later on an Apple-silicon Mac (M1 or newer). Intel Macs are not supported by this build. This preview was exercised on macOS 26.5.1; macOS 13 execution and installation on a clean offline Mac remain unverified.
 
 ## Install
 
-1. Download `File-Converter-0.2.0.dmg` from the [0.2.0 preview release](https://github.com/agiusthomas/file-converter/releases/tag/v0.2.0).
+1. Download `File-Converter-0.2.1.dmg` from the [0.2.1 preview release](https://github.com/agiusthomas/file-converter/releases/tag/v0.2.1).
 2. Open the DMG and drag **File Converter** onto **Applications**.
 3. Eject the File Converter disk image.
 4. Open **File Converter** from Applications. Confirm macOS's normal first-open download prompt if shown.
@@ -19,7 +19,7 @@ The app and DMG are Developer ID signed and notarized by Apple. No command-line 
 - Closing the window keeps the app running in the menu bar. Use its menu to reopen the window or choose **Quit File Converter**.
 - Launch at login and watched folders are optional settings.
 
-Built-in conversions work locally. Optional Media, Documents, Ebooks, and Transcription packs are not available for download in this preview; actions requiring them remain unavailable. See the repository's [capability list](https://github.com/agiusthomas/file-converter/blob/main/docs/CAPABILITIES.md) and [known remaining work](https://github.com/agiusthomas/file-converter/blob/main/docs/ROADMAP.md).
+Built-in conversions work locally. A limited Media runtime is available as an explicit download in **Engines**, described below. Documents, Ebooks, Transcription and PDF structure packs remain unpublished; actions requiring missing packs remain unavailable. The full seven-milestone expansion is unfinished. See the repository's [capability list](https://github.com/agiusthomas/file-converter/blob/main/docs/CAPABILITIES.md) and [known remaining work](https://github.com/agiusthomas/file-converter/blob/main/docs/ROADMAP.md).
 
 ## Update or remove
 
@@ -29,12 +29,12 @@ To remove the app, quit it and move **File Converter.app** from Applications to 
 
 ## Verify a download (optional)
 
-The release includes `SHA256SUMS.txt`. After downloading the DMG and checksum file into the same folder, compare the DMG's SHA-256 checksum with the matching line in that file. The ZIP is an alternative app download: unzip it, move the app to Applications, and follow the same first-use steps.
+The release includes `File-Converter-0.2.1-SHA256SUMS.txt`. After downloading the DMG and checksum file into the same folder, compare the DMG's SHA-256 checksum with the matching line in that file. The ZIP is an alternative app download: unzip it, move the app to Applications, and follow the same first-use steps.
 
-## Engine preview in the source candidate
+## Media engine preview
 
-The published 0.2.0 app above retains its original empty engine catalog. The current 0.2.1 source candidate (not yet an app release) includes a [Media 0.1.2 qualification preview](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2). It requires the publisher's Developer ID signed candidate; an unsigned or differently signed source build cannot install the publisher's executable packs.
+The 0.2.1 preview includes a [Media 0.1.2 qualification preview](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2), using independently built FFmpeg 8.1.2. It requires the publisher's Developer ID signed app; an unsigned or differently signed source build cannot install the publisher's executable packs. The preserved 0.2.0 app retains its original empty engine catalog and cannot install this newer pack.
 
-In that candidate, open **Engines**, review compatibility/sizes/notices, then choose **Download and install**. Installation is explicit and cancellable; a retry keeps the previous active version until verification/activation succeeds. Updates expose a rollback button. Engine changes activate when current queued work finishes, while running jobs retain their runtime versions. **Remove pack** disables future activation and reclaims files after live pins release. Use the license/source disclosure to inspect the complete runtime.
+Open **Engines**, review compatibility/sizes/notices, then choose **Download and install**. Installation is explicit and cancellable; a retry keeps the previous active version until verification/activation succeeds. Updates expose a rollback button. Engine changes activate when current queued work finishes, while running jobs retain their runtime versions. **Remove pack** disables future activation and reclaims files after live pins release. Use the license/source disclosure to inspect the complete runtime. Once installed, conversions run locally without a network connection.
 
-The initial runtime supports the qualified FLAC and H.264/AAC paths; complete MP3/Opus/VP9 dependencies and advanced Media workflows remain required. Minimum macOS 13 execution and clean offline installation are unverified. Documents, Ebooks, Transcription and PDF structure packs remain unpublished. See [exact qualification and limitations](FFMPEG_CHECKPOINT.md). Before removing a candidate app, remove optional packs from Engines if you also want their cached runtime files reclaimed; generated user outputs are unaffected.
+The initial runtime supports the qualified FLAC and H.264/AAC paths; complete MP3/Opus/VP9 dependencies and advanced Media workflows remain required. See [exact qualification and limitations](https://github.com/agiusthomas/file-converter/blob/main/docs/FFMPEG_CHECKPOINT.md). Before removing the app, remove optional packs from Engines if you also want their cached runtime files reclaimed; generated user outputs are unaffected.

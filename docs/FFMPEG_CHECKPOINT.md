@@ -1,6 +1,6 @@
 # Real FFmpeg pack qualification
 
-20 October 2026. Checkpoint 1 is **verified on the current Mac**. This is not completion of a milestone or the full Media pack. Published app 0.2.0 remains unchanged. The candidate app is 0.2.1 (build 3).
+20 October 2026. Checkpoint 1 is **verified on the current Mac**. This is not completion of a milestone or the full Media pack. Published app 0.2.0 remains unchanged. The new app preview is 0.2.1 (build 3).
 
 ## Independently built runtime
 
@@ -19,7 +19,7 @@ Both runtimes have passed `scripts/validate-engine-runtime.py`: arm64 only, ever
 | Media 0.1.1 | FFmpeg 8.1.2 | 21870879 | `2b3bc10572a99c21c105d93fd379d69279ec14a18293c38611c68301496f8697` | Accepted, `de75aea9-6916-411e-8d9c-d7f58391f209` |
 | Media 0.1.2 | FFmpeg 8.1.2 | 21870879 | `419e2db4491978df9773ef5b7ee70edf1aeb4b2f51265065566e931052791dbb` | Accepted, `84e39575-7094-489b-82f5-63900b703e38` |
 
-Artifacts and build/signing/notarization logs are retained under ignored `build/`. Media 0.1.2 is now a [published/downloadable qualification preview](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2), with the matching source archive and checksums. The exact artifact URL, SHA-256, sizes, platform limits and publisher team are sealed into the candidate app catalog. Media 0.1.0/0.1.1 remain local acceptance artifacts. 0.1.0 and 0.1.1 undercount signed installed bytes; 0.1.2 fixes this with an exact signed logical size of 33,491,160 bytes. Versions are immutable; do not replace earlier ZIPs under their existing version.
+Artifacts and build/signing/notarization logs are retained under ignored `build/`. Media 0.1.2 is now a [published/downloadable qualification preview](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2), with the matching source archive and checksums. The exact artifact URL, SHA-256, sizes, platform limits and publisher team are sealed into the 0.2.1 app catalog. Media 0.1.0/0.1.1 remain local acceptance artifacts. 0.1.0 and 0.1.1 undercount signed installed bytes; 0.1.2 fixes this with an exact signed logical size of 33,491,160 bytes. Versions are immutable; do not replace earlier ZIPs under their existing version.
 
 These initial LGPL runtimes provide native FFmpeg codecs and Apple hardware encoders, but do **not** include LAME, libopus or libvpx. MP3/Opus/VP9 WebM encoding and its pinned dependencies, notices and corpus remain required for the complete Media milestone. Actual encoder/muxer probing hides absent profiles.
 
@@ -60,6 +60,6 @@ Generated fixtures: two-second 44.1 kHz mono sine WAV, two-second 320×180 MPEG-
 - Full physical Finder gesture and VoiceOver/appearance acceptance.
 - Other production runtime/model packs and all remaining milestones in `CONTINUATION_PLAN.md`.
 
-The 0.2.1 app is a local signed candidate, not a newly notarized/published app release. Published 0.2.0 app/DMG/ZIP/checksums remain preserved. Media 0.1.2 is a public qualification preview with an explicit limited codec and platform qualification scope.
+The [0.2.1 app preview](https://github.com/agiusthomas/file-converter/releases/tag/v0.2.1) is separately Developer ID signed, notarized, stapled and published at the user's request; [distribution evidence](evidence/app-0.2.1-release.json) is separate from these runtime acceptance results. Publication does not close the remaining milestone gates. Published 0.2.0 app/DMG/ZIP/checksums remain preserved. Media 0.1.2 is a public qualification preview with an explicit limited codec and platform qualification scope.
 
 Sources: [FFmpeg releases](https://ffmpeg.org/releases/), [FFmpeg build-dependent license guidance](https://ffmpeg.org/legal.html), [Apple sandbox file and process access](https://developer.apple.com/documentation/security/accessing-files-from-the-macos-app-sandbox). The helper-directory access was also inspected in this host's unmodified Apple sandbox profile; no profile is edited or bundled by this project.

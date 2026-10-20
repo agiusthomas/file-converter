@@ -15,8 +15,10 @@
   },
   "app": {
     "build": "3",
+    "distributionEvidence": "app-0.2.1-release.json",
     "publisherTeam": "QJ75C25V8L",
-    "released": false,
+    "releaseURL": "https://github.com/agiusthomas/file-converter/releases/tag/v0.2.1",
+    "released": true,
     "transport": "XPCWorkerTransport",
     "version": "0.2.1"
   },

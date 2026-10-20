@@ -6,16 +6,17 @@ Updated 20 October 2026. This is the execution plan for finishing the approved s
 
 Deliver the full local file utility originally requested: conversion, compression, extraction, lightweight preparation, recipes, and Mac workflows. Preserve the existing SwiftUI/AppKit app, Glacier design, Finder wheel, macOS 13+ deployment target, and Apple-silicon support.
 
-**The original plan is not complete.** Version 0.2.0 is a partial preview. Its successful signing, notarization, and publication do not establish feature completeness or completion of any milestone's full release gate.
+**The original plan is not complete.** Versions 0.2.0 and 0.2.1 are partial previews. Its successful signing, notarization, and publication do not establish feature completeness or completion of any milestone's full release gate.
 
-The largest immediate gap is that optional engine adapters exist but usable production packs do not. Calling a pack optional describes how users install it; delivering that pack is still required by the approved plan. Do not finish this work with another release whose required features are unavailable because their packs were never delivered.
+The largest immediate gap is that most optional engine adapters still lack usable production packs. Media 0.1.2 now provides a limited qualification preview; it does not finish the required Media runtime or its acceptance gate. Calling a pack optional describes how users install it; delivering that pack is still required by the approved plan. Do not finish this work with another release whose required features are unavailable because their packs were never delivered.
 
 ### Repository and published baseline
 
 - Work in `/Users/thomasagius/Documents/Projects/file-converter`.
 - Repository: <https://github.com/agiusthomas/file-converter>, branch `main`.
 - Baseline implementation/release commit: `7b9760c6edf89508c0a88f1291974d32a6285e72`. Later planning or implementation commits may follow it; inspect the actual checkout before editing.
-- Existing preview: <https://github.com/agiusthomas/file-converter/releases/tag/v0.2.0>.
+- Preserved preview: <https://github.com/agiusthomas/file-converter/releases/tag/v0.2.0>.
+- Current preview: [0.2.1](https://github.com/agiusthomas/file-converter/releases/tag/v0.2.1), published at the user's explicit request after checkpoint 1. It includes real Media 0.1.2 download/lifecycle support; it does not close any milestone's full acceptance gate. [Release changes/limits](releases/0.2.1.md), [distribution evidence](evidence/app-0.2.1-release.json).
 - The preview includes a notarized app, notarized DMG, ZIP, checksums, and installation instructions. Preserve those versioned artifacts; use new versions for changed binaries and packs.
 - The 58-test suite passed locally with opt-in native media/OCR and external-engine integration checks. The release commit also passed GitHub's macOS tests, build, and signature checks. These are baseline evidence, not a substitute for the remaining acceptance work.
 - Developer ID signing and notarization are configured locally. The ignored `Configuration/Signing.local.plist` references the signing identity and Keychain notarization profile. Use the existing scripts and secure configuration; do not request credentials again unless an actual check fails. Never commit private keys, passwords, local signing settings, or compiler caches.
@@ -24,14 +25,14 @@ The largest immediate gap is that optional engine adapters exist but usable prod
 
 | Area | Current baseline | Outstanding delivery |
 | --- | --- | --- |
-| Shared jobs | Staged inputs, XPC worker, persistent queue/retry, manifests and exclusive publication | Real external-engine sandbox execution, failure/recovery qualification and responsiveness benchmarks |
+| Shared jobs | Staged inputs, XPC worker, persistent queue/retry, manifests, exclusive publication and real FFmpeg sandbox execution | Full failure/recovery qualification and responsiveness benchmarks |
 | Images/PDF | Native image operations, bundled still WebP, PDF page tools/passwords/OCR/searchable PDF | qpdf structure tools, complete preservation/loss notices and representative parity/corpus checks |
-| Audio/video | Native compatible exports and basic preparation | Signed FFmpeg Media pack, track/subtitle controls, playback/waveforms, broader media qualification |
+| Audio/video | Native compatible exports, basic preparation and initial signed FFmpeg Media 0.1.2 preview | Complete Media dependencies, track/subtitle controls, playback/waveforms, broader media qualification |
 | Office/Markdown | LibreOffice/Pandoc adapters and development integration tests | Signed Documents pack, usable document/sheet previews, font/content notices and full interchange coverage |
 | Archives/ebooks | Bounded system-libarchive operations; Calibre adapter | Pinned archive runtime, qualified RAR extraction/repackaging, EPUB editing/navigation, signed Ebooks pack |
 | Recipes/Mac | Recipe editor/CLI, Finder Service, Shortcuts conversion, watchers and shelf | Dedicated Quick Action, recipe entry-point parity, destination UI and automation/removal qualification |
 | Transcription/scans | Vision OCR/scan processing; whisper.cpp adapter | Signed Transcription pack, model management, editable transcript/timing review, experimental table workflow |
-| Distribution | Developer ID app/DMG signing, notarization, installation docs | Actual downloadable packs, clean offline installation/rollback and full platform/accessibility acceptance |
+| Distribution | Developer ID app/DMG signing, notarization, installation docs and real Media download/lifecycle | Remaining production packs, clean offline installation and full platform/accessibility/failure acceptance |
 
 Adapter source, a generated signing fixture, a test using a developer-installed tool, and a user-installable pack are different evidence. Report which one was tested.
 
@@ -51,7 +52,7 @@ Start with checkpoint 1 below. It is an early engineering proof for the shared a
 
 ### Checkpoint 1 — prove a real production pack
 
-Current status: **verified on the current Mac**. Independent FFmpeg 8.1.1/8.1.2 runtimes execute through the Developer ID signed app and sandboxed XPC worker. Observed-child cancellation, original integrity, independent reopening, real-version update/rollback, tamper rejection, reinstall rollback preservation, pinned removal/reclamation and actual catalog download interruption/retry pass. Media 0.1.2 is published as a qualification preview; app 0.2.1 remains a local signed candidate. Native window download/import/update/rollback/removal and downloaded-pack conversion pass. Exact builds, artifacts, observed results and platform/codec limits: [checkpoint evidence](FFMPEG_CHECKPOINT.md), [machine-readable summary](evidence/media-0.1.2-checkpoint.json). This engineering checkpoint does not pass the full milestone 1 or Media release gate.
+Current status: **verified on the current Mac**. Independent FFmpeg 8.1.1/8.1.2 runtimes execute through the Developer ID signed app and sandboxed XPC worker. Observed-child cancellation, original integrity, independent reopening, real-version update/rollback, tamper rejection, reinstall rollback preservation, pinned removal/reclamation and actual catalog download interruption/retry pass. Media 0.1.2 and the separately notarized app 0.2.1 are published as qualification previews. Native window download/import/update/rollback/removal and downloaded-pack conversion pass. Exact builds, artifacts, observed results and platform/codec limits: [checkpoint evidence](FFMPEG_CHECKPOINT.md), [machine-readable summary](evidence/media-0.1.2-checkpoint.json). This engineering checkpoint does not pass the full milestone 1 or Media release gate.
 
 - [x] Audit `EnginePacks.swift`, `WorkerTransport.swift`, `ExternalEngine.swift`, the bundled catalog, pack builder and worker entitlements. Confirm what the signed app actually grants to an installed executable, its libraries/resources, staged inputs and outputs.
 - [x] Build a pinned, relocatable arm64 FFmpeg runtime independently, with an explicit codec/license configuration and all required dependencies/notices. Choose and verify versions against macOS 13; do not assume current upstream binaries meet that target. Do not copy executables out of another installed app or require Homebrew on the user's Mac.
@@ -173,7 +174,7 @@ Full document authoring, video timelines, guaranteed editable PDF-to-Word recons
 | Milestone 6 remaining work | not started | Dedicated Finder extension, recipe entry-point parity, destination/watchers/folder removal qualification remain required |
 | Milestone 7 remaining work | not started | whisper.cpp/model delivery, transcript review and experimental scanned-table workflow remain required |
 
-Next concrete work: complete milestone 1's fault/activation/download failure matrix and responsiveness/entry-point qualification. Execute macOS 13 and clean offline checks on suitable hosts before releasing the candidate; then continue the remaining milestones in the stated order. Do not repeat checkpoint 1 as another fixture-only or planning-only cycle.
+Next concrete work: complete milestone 1's fault/activation/download failure matrix and responsiveness/entry-point qualification. Execute macOS 13 and clean offline checks on suitable hosts before declaring a full release gate passed; the user-requested 0.2.1 preview retains these explicit qualification gaps. Continue the remaining milestones in the stated order. Do not repeat checkpoint 1 as another fixture-only or planning-only cycle.
 
 ## First-session deliverables and handoff
 

@@ -19,5 +19,6 @@ spctl --assess --type execute --verbose "$project_dir/build/File Converter.app"
 ditto -c -k --sequesterRsrc --keepParent "$project_dir/build/File Converter.app" "$archive"
 ./scripts/package-dmg.sh
 cd "$project_dir/build"
-shasum -a 256 "File-Converter-$version.dmg" "File-Converter-$version.zip" > SHA256SUMS.txt
-cat SHA256SUMS.txt
+checksums="File-Converter-$version-SHA256SUMS.txt"
+shasum -a 256 "File-Converter-$version.dmg" "File-Converter-$version.zip" > "$checksums"
+cat "$checksums"

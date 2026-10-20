@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-20",
+  "version": "0.2.1",
+  "build": "3",
+  "releaseKind": "prerelease",
+  "releaseURL": "https://github.com/agiusthomas/file-converter/releases/tag/v0.2.1",
+  "sourceRef": "v0.2.1",
+  "implementationCommit": "7a28c39",
+  "publisherTeam": "QJ75C25V8L",
+  "appCDHash": "3a6ab6b66659f3139e4db768b75c46feed847515",
+  "matchesFrozenSignedAppAcceptanceCDHash": true,
+  "notarization": {
+    "app": {
+      "id": "4e0bd767-6727-4d47-97aa-953bbbadb0de",
+      "status": "Accepted"
+    },
+    "dmg": {
+      "id": "460374fe-d9b1-4ff1-a9a6-8e9e8dfe0778",
+      "status": "Accepted"
+    }
+  },
+  "checks": {
+    "appStrictNestedDeveloperIDSignature": "passed",
+    "appStapleValidation": "passed",
+    "appGatekeeper": "Notarized Developer ID",
+    "dmgStrictSignature": "passed",
+    "dmgStapleValidation": "passed",
+    "dmgGatekeeper": "Notarized Developer ID",
+    "dmgFilesystemChecksum": "passed",
+    "extractedZIPAppStrictSignatureStapleAndGatekeeper": "passed",
+    "extractedZIPAppCDHashMatches": true,
+    "newArtifactChecksums": "passed",
+    "originalV020ArtifactsAndChecksumFileUnchanged": true,
+    "localTests": {
+      "passed": 64,
+      "failed": 0,
+      "skipped": 0,
+      "nativeMediaOCR": true,
+      "supplementalExternalTools": true
+    },
+    "signedAppMediaQualification": "media-0.1.2-checkpoint.json"
+  },
+  "artifacts": [
+    {
+      "name": "File-Converter-0.2.1.dmg",
+      "bytes": 4514095,
+      "sha256": "bcc79cd25a7b3bb2b3c540907560eee10b31ea8d34648a3f39f37d5c2ffc8c5f",
+      "url": "https://github.com/agiusthomas/file-converter/releases/download/v0.2.1/File-Converter-0.2.1.dmg"
+    },
+    {
+      "name": "File-Converter-0.2.1.zip",
+      "bytes": 4094235,
+      "sha256": "d9cfa9d8cd4d775632e5c5b07bd81d1fe39bbfec58a91a2972a640a7185a4489",
+      "url": "https://github.com/agiusthomas/file-converter/releases/download/v0.2.1/File-Converter-0.2.1.zip"
+    },
+    {
+      "name": "File-Converter-0.2.1-SHA256SUMS.txt",
+      "bytes": 182,
+      "sha256": "3cf83ca66bf99d4f76f1162824b1606bf28c074cbfde685f29256867e9fa5aae",
+      "url": "https://github.com/agiusthomas/file-converter/releases/download/v0.2.1/File-Converter-0.2.1-SHA256SUMS.txt"
+    }
+  ],
+  "qualificationLimits": [
+    "Executed on macOS 26.5.1 arm64; macOS 13 deployment audit is not macOS 13 execution.",
+    "Minimum OS and clean offline second-host installation remain unverified.",
+    "Media is a limited qualification preview; LAME/Opus/VP9, advanced workflows and full corpus remain required.",
+    "Documents, Ebooks, Transcription/models and PDF structure packs remain unpublished.",
+    "Full failure/recovery, large-batch, physical Finder, accessibility/appearance and other milestone gates remain open.",
+    "Publication at the user request does not complete any milestone or the original expansion."
+  ]
+}

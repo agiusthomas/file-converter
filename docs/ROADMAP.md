@@ -1,6 +1,6 @@
 # Expansion roadmap and open release gates
 
-**Continuation:** use [the detailed completion plan](CONTINUATION_PLAN.md) for actionable tasks and acceptance gates, and [the new-conversation handoff](NEW_CONVERSATION.md) to resume in another chat. Version 0.2.0 is a partial preview; the original seven-milestone expansion is unfinished. Optional pack installation does not make delivery of those packs optional for this project.
+**Continuation:** use [the detailed completion plan](CONTINUATION_PLAN.md) for actionable tasks and acceptance gates, and [the new-conversation handoff](NEW_CONVERSATION.md) to resume in another chat. Versions 0.2.0 and 0.2.1 are partial previews; the original seven-milestone expansion is unfinished. Optional pack installation does not make delivery of those packs optional for this project.
 
 This tracks the approved seven-release expansion. The app remains a local macOS 13+ Apple-silicon utility with a Finder wheel and a Glacier workspace. Implemented features and verification evidence are in [IMPLEMENTATION.md](../IMPLEMENTATION.md); the [generated capability matrix](CAPABILITIES.md) reflects the current registry, not a promise that every embedded feature is supported.
 

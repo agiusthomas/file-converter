@@ -8,9 +8,9 @@ Requires **macOS 13+ on Apple silicon**. Licensed under [MIT](LICENSE), with [th
 
 ## Install
 
-Download the signed and notarized **[0.2.0 preview DMG](https://github.com/agiusthomas/file-converter/releases/download/v0.2.0/File-Converter-0.2.0.dmg)**, open it, drag **File Converter** to **Applications**, eject the disk image, and open the app from Applications. No Xcode or command-line tools are needed to use it.
+Download the signed and notarized **[0.2.1 preview DMG](https://github.com/agiusthomas/file-converter/releases/download/v0.2.1/File-Converter-0.2.1.dmg)**, open it, drag **File Converter** to **Applications**, eject the disk image, and open the app from Applications. No Xcode or command-line tools are needed to use it.
 
-See [installation, first-use, update, and removal instructions](docs/INSTALLATION.md). The published 0.2.0 app includes built-in conversions. This checkout is a 0.2.1 candidate with a [downloadable Media runtime qualification preview](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2); 0.2.0 cannot install that newer pack. No 0.2.1 app release is published.
+See [installation, first-use, update, and removal instructions](docs/INSTALLATION.md). The 0.2.1 preview includes built-in conversions and a [downloadable Media runtime qualification preview](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2). The preserved 0.2.0 app cannot install that newer pack. Read the [0.2.1 changes and limitations](docs/releases/0.2.1.md) before installing.
 
 ## Run
 
@@ -32,9 +32,9 @@ Included development capabilities:
 - Plain text encodings/line endings, CSV/TSV preserving textual cell values, and SRT/VTT timing conversion.
 - Saved recipes with ordered processing and multiple exports, opt-in stable-file watchers, result shelf/drag-out/copy, Services integration, and a Shortcuts conversion action.
 
-Optional adapters cover FFmpeg media, LibreOffice/Pandoc documents and spreadsheets, Calibre ebooks, and whisper.cpp transcription. **Media 0.1.2 (FFmpeg 8.1.2) is published as a qualification preview for the 0.2.1 source-build candidate.** Its native Engines screen supports explicit download/progress/cancel/retry, notices, update, rollback and deferred removal. The broader codec dependencies, Documents/Ebooks/Transcription packs and their acceptance gates remain unfinished. Missing-pack actions remain discoverable; the wheel offers installed usable actions. The app does not import executable tools from other installed applications. All installed conversions run locally; network use is limited to explicit pack downloads.
+Optional adapters cover FFmpeg media, LibreOffice/Pandoc documents and spreadsheets, Calibre ebooks, and whisper.cpp transcription. **Media 0.1.2 (FFmpeg 8.1.2) is published as a qualification preview for the signed 0.2.1 app preview.** Its native Engines screen supports explicit download/progress/cancel/retry, notices, update, rollback and deferred removal. The broader codec dependencies, Documents/Ebooks/Transcription packs and their acceptance gates remain unfinished. Missing-pack actions remain discoverable; the wheel offers installed usable actions. The app does not import executable tools from other installed applications. All installed conversions run locally; network use is limited to explicit pack downloads.
 
-Version 0.2.0 is a **Developer ID signed and notarized preview**, with hardened runtime and a secure timestamp. Its stapled ticket passes Gatekeeper assessment. The full expansion has open work and release gates, including minimum-OS testing, clean offline installation, fault qualification and physical Finder gestures. Real signed FFmpeg execution/download/lifecycle now pass on the development Mac; see [the exact checkpoint evidence](docs/FFMPEG_CHECKPOINT.md). Preview distribution does not declare those gates complete. See [implementation status](IMPLEMENTATION.md), [capabilities](docs/CAPABILITIES.md), and [remaining milestones](docs/ROADMAP.md).
+Version 0.2.1 is a **Developer ID signed and notarized preview**, with hardened runtime and a secure timestamp. Its stapled ticket passes Gatekeeper assessment. The full expansion has open work and release gates, including minimum-OS testing, clean offline installation, fault qualification and physical Finder gestures. Real signed FFmpeg execution/download/lifecycle now pass on the development Mac; see [the exact checkpoint evidence](docs/FFMPEG_CHECKPOINT.md). Preview distribution does not declare those gates complete. See [implementation status](IMPLEMENTATION.md), [capabilities](docs/CAPABILITIES.md), and [remaining milestones](docs/ROADMAP.md).
 
 ## Verify
 

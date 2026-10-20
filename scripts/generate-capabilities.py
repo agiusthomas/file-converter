@@ -15,5 +15,5 @@ lines = ['# Capability reference', '', f'Generated {datetime.date.today().isofor
 for action in report['actions']:
     availability = 'Included' if action['available'] else 'Requires '+action.get('requiredPack', 'compatible engine')+' pack'
     lines.append('| `'+action['id']+'` | '+', '.join(action['families'])+' | '+', '.join('`'+x['id']+'`' for x in action['profiles'])+' | '+availability+' |')
-lines += ['', 'Media 0.1.2 is a published FFmpeg qualification preview for the signed 0.2.1 candidate, with FLAC and H.264/AAC proof; this table was generated without an active optional pack. Its full codec/workflow/platform corpus and the other production packs remain required. See [runtime evidence](FFMPEG_CHECKPOINT.md) and [implementation status](../IMPLEMENTATION.md).', '']
+lines += ['', 'Media 0.1.2 is a published FFmpeg qualification preview for the signed 0.2.1 app preview, with FLAC and H.264/AAC proof; this table was generated without an active optional pack. Its full codec/workflow/platform corpus and the other production packs remain required. See [runtime evidence](FFMPEG_CHECKPOINT.md) and [implementation status](../IMPLEMENTATION.md).', '']
 args.output.write_text('\n'.join(lines))

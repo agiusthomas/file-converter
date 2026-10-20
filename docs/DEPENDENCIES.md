@@ -16,7 +16,7 @@ Apple's ImageIO, PDFKit, Vision, AVFoundation, CoreText, AppKit, and Security fr
 
 ## Optional engine packs
 
-The adapters support separately signed Media (FFmpeg), Documents (LibreOffice/Pandoc), Ebooks (Calibre), and Transcription (whisper.cpp/model) runtimes. No third-party application binaries are copied into this repository. Media 0.1.2 is a published FFmpeg 8.1.2 qualification preview and appears in the 0.2.1 candidate's sealed catalog; the other packs remain unpublished. Pack manifests must declare exact engine versions, supported architecture/OS, tool paths, SHA-256 hashes, and license/source notices before activation.
+The adapters support separately signed Media (FFmpeg), Documents (LibreOffice/Pandoc), Ebooks (Calibre), and Transcription (whisper.cpp/model) runtimes. No third-party application binaries are copied into this repository. Media 0.1.2 is a published FFmpeg 8.1.2 qualification preview and appears in the 0.2.1 app preview's sealed catalog; the other packs remain unpublished. Pack manifests must declare exact engine versions, supported architecture/OS, tool paths, SHA-256 hashes, and license/source notices before activation.
 
 FFmpeg's license depends on its build configuration. LibreOffice, Pandoc, Calibre, whisper.cpp, models, and transitive libraries retain their own licenses; the application's MIT license does not replace those terms.
 
