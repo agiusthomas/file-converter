@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "version": "1.0.0",
+  "build": "4",
+  "releaseKind": "official",
+  "releaseURL": "https://github.com/agiusthomas/file-converter/releases/tag/v1.0.0",
+  "sourceRef": "v1.0.0",
+  "sourceBaseCommit": "1d34af85eb1d5065cca71273e1bcab2604c9f387",
+  "appCDHash": "3f84cb92b8c224bd871e4ef921a7a63f27101834",
+  "publisherTeam": "QJ75C25V8L",
+  "notarization": {
+    "app": {
+      "id": "ac6590ea-ede0-4a66-aa5b-e5f4b3c2397b",
+      "status": "Accepted"
+    },
+    "dmg": {
+      "id": "2d5ee199-98b4-4136-a75f-b4bfd0b79435",
+      "status": "Accepted"
+    }
+  },
+  "checks": {
+    "appStrictNestedDeveloperIDSignature": "passed",
+    "appSecureTimestampAndHardenedRuntime": "passed",
+    "appStapleValidation": "passed",
+    "appGatekeeper": "Notarized Developer ID",
+    "dmgStrictSignature": "passed",
+    "dmgStapleValidation": "passed",
+    "dmgGatekeeper": "Notarized Developer ID",
+    "dmgFilesystemChecksum": "passed",
+    "extractedZIPAppStrictSignatureStapleAndGatekeeper": "passed",
+    "mountedDMGAppStrictSignatureStapleAndGatekeeper": "passed",
+    "packagedAppCDHashesMatch": true,
+    "installerShortcutAndInstructions": "passed",
+    "artifactChecksums": "passed",
+    "previousV021ArtifactsUnchanged": true,
+    "localTests": {
+      "passed": 73,
+      "failed": 0,
+      "skipped": 0,
+      "nativeMediaOCR": true,
+      "supplementalExternalTools": true,
+      "nativeWheel": true
+    },
+    "signedAppMediaQualification": {
+      "passed": true,
+      "childTerminated": true,
+      "independentOutputDecode": "passed",
+      "checks": {
+        "cancellation": true,
+        "deactivatedPinnedRuntimeUsable": true,
+        "interruptedDownloadPreservedRuntime": true,
+        "originalsUnchanged": true,
+        "passed": true,
+        "reinstallPreservedRollback": true,
+        "removalDeferredForPin": true,
+        "removalReclaimedAfterRelease": true,
+        "rollback": true,
+        "tamperRejected": true
+      }
+    },
+    "minimumWindowLightDarkBranding": "passed",
+    "existingJobHistoryAfterRename": "passed",
+    "exactCommitGitHubCI": "Required before publication; final run URL is in the GitHub release notes"
+  },
+  "artifacts": [
+    {
+      "name": "Glacier-File-Converter-1.0.0.dmg",
+      "bytes": 4728599,
+      "sha256": "53fad849f84566d065a5d602d3412e846303cfee25b1cf20e1605efd363acb68",
+      "url": "https://github.com/agiusthomas/file-converter/releases/download/v1.0.0/Glacier-File-Converter-1.0.0.dmg"
+    },
+    {
+      "name": "Glacier-File-Converter-1.0.0.zip",
+      "bytes": 4306095,
+      "sha256": "dda074279e8ea2c7de1fda59d0a859d645b30dd986c99160a239d6390e451ac5",
+      "url": "https://github.com/agiusthomas/file-converter/releases/download/v1.0.0/Glacier-File-Converter-1.0.0.zip"
+    },
+    {
+      "name": "Glacier-File-Converter-1.0.0-SHA256SUMS.txt",
+      "bytes": 198,
+      "sha256": "a2046da78833b298b9c4c3edd25c6032c770198249f981506fe2b372a7029050",
+      "url": "https://github.com/agiusthomas/file-converter/releases/download/v1.0.0/Glacier-File-Converter-1.0.0-SHA256SUMS.txt"
+    }
+  ],
+  "qualificationLimits": [
+    "macOS 26.5.1 arm64 tested; macOS 13 execution and clean offline installation on a second Mac remain unverified.",
+    "Physical Finder gestures across displays/Spaces/edges and full accessibility/large-batch/fault qualification remain open.",
+    "Media 0.1.2 remains a limited qualification preview; Documents/Ebooks/Transcription/PDF structure packs are unpublished.",
+    "Official 1.0.0 publishes the available feature set and does not complete the separate seven-milestone expansion."
+  ]
+}

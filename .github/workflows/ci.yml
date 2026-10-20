@@ -33,4 +33,4 @@ jobs:
       - name: Build release app
         run: ./scripts/build-app.sh release
       - name: Verify app signature
-        run: codesign --verify --deep --strict "build/File Converter.app"
+        run: codesign --verify --deep --strict "build/Glacier File Converter.app"

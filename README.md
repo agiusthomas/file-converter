@@ -1,4 +1,6 @@
-# File Converter
+# Glacier File Converter
+
+**Glacier File Converter 1.0.0** is the first official release, bringing together the native conversion tools, improved Finder wheel, Glacier branding and faceted ice icon. The existing layout and palette are unchanged. See [all features, changes and known limits](docs/releases/1.0.0.md).
 
 Development continuation: [completion plan](docs/CONTINUATION_PLAN.md) · [new-conversation handoff](docs/NEW_CONVERSATION.md). The full seven-milestone expansion remains unfinished.
 
@@ -8,9 +10,9 @@ Requires **macOS 13+ on Apple silicon**. Licensed under [MIT](LICENSE), with [th
 
 ## Install
 
-Download the signed and notarized **[0.2.1 preview DMG](https://github.com/agiusthomas/file-converter/releases/download/v0.2.1/File-Converter-0.2.1.dmg)**, open it, drag **File Converter** to **Applications**, eject the disk image, and open the app from Applications. No Xcode or command-line tools are needed to use it.
+Download the signed and notarized **[Glacier File Converter 1.0.0 DMG](https://github.com/agiusthomas/file-converter/releases/download/v1.0.0/Glacier-File-Converter-1.0.0.dmg)**, open it, drag **Glacier File Converter** to **Applications**, eject the disk image, and open the app from Applications. No Xcode or command-line tools are needed to use it.
 
-See [installation, first-use, update, and removal instructions](docs/INSTALLATION.md). The 0.2.1 preview includes built-in conversions and a [downloadable Media runtime qualification preview](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2). The preserved 0.2.0 app cannot install that newer pack. Read the [0.2.1 changes and limitations](docs/releases/0.2.1.md) before installing.
+See [installation, first-use, update, and removal instructions](docs/INSTALLATION.md). The 1.0.0 release includes built-in conversions and a [downloadable Media runtime qualification preview](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2). The preserved 0.2.0 app cannot install that newer pack. Read the [1.0.0 release notes](docs/releases/1.0.0.md) before installing. Earlier [0.2.1 preview downloads](https://github.com/agiusthomas/file-converter/releases/tag/v0.2.1) retain their original filenames and remain available.
 
 ## Run
 
@@ -18,12 +20,12 @@ For source builds, use **Xcode 26+**. The project retains SwiftUI/AppKit and Swi
 
 ```sh
 ./scripts/build-app.sh
-open "build/File Converter.app"
+open "build/Glacier File Converter.app"
 ```
 
 The app stays in the menu bar after its window closes. Add or drop files, choose an available action and output, preview the result, then run it. Results save beside originals unless you select a destination. Aggregations use the first source’s folder. Existing names receive a number. Activity records verified outputs, notices, errors, and interrupted work; retries are explicit.
 
-Included development capabilities:
+Included features:
 
 - Images: native formats plus bundled still WebP encoding, crop/rotate/resize/background, multiple outputs, GPS-property removal, and measured size limits.
 - PDF: page thumbnails/order/rotation/removal, merge/split, page images, image-to-PDF, text extraction, passwords, local OCR, searchable PDF, and explicitly destructive image-downsampling compression.
@@ -32,9 +34,9 @@ Included development capabilities:
 - Plain text encodings/line endings, CSV/TSV preserving textual cell values, and SRT/VTT timing conversion.
 - Saved recipes with ordered processing and multiple exports, opt-in stable-file watchers, result shelf/drag-out/copy, Services integration, and a Shortcuts conversion action.
 
-Optional adapters cover FFmpeg media, LibreOffice/Pandoc documents and spreadsheets, Calibre ebooks, and whisper.cpp transcription. **Media 0.1.2 (FFmpeg 8.1.2) is published as a qualification preview for the signed 0.2.1 app preview.** Its native Engines screen supports explicit download/progress/cancel/retry, notices, update, rollback and deferred removal. The broader codec dependencies, Documents/Ebooks/Transcription packs and their acceptance gates remain unfinished. Missing-pack actions remain discoverable; the wheel offers installed usable actions. The app does not import executable tools from other installed applications. All installed conversions run locally; network use is limited to explicit pack downloads.
+Optional adapters cover FFmpeg media, LibreOffice/Pandoc documents and spreadsheets, Calibre ebooks, and whisper.cpp transcription. **Media 0.1.2 (FFmpeg 8.1.2) is available as a separate qualification preview for the signed app.** Its native Engines screen supports explicit download/progress/cancel/retry, notices, update, rollback and deferred removal. The broader codec dependencies, Documents/Ebooks/Transcription packs and their acceptance gates remain unfinished. Missing-pack actions remain discoverable; the wheel offers installed usable actions. The app does not import executable tools from other installed applications. All installed conversions run locally; network use is limited to explicit pack downloads.
 
-Version 0.2.1 is a **Developer ID signed and notarized preview**, with hardened runtime and a secure timestamp. Its stapled ticket passes Gatekeeper assessment. The full expansion has open work and release gates, including minimum-OS testing, clean offline installation, fault qualification and physical Finder gestures. Real signed FFmpeg execution/download/lifecycle now pass on the development Mac; see [the exact checkpoint evidence](docs/FFMPEG_CHECKPOINT.md). Preview distribution does not declare those gates complete. See [implementation status](IMPLEMENTATION.md), [capabilities](docs/CAPABILITIES.md), and [remaining milestones](docs/ROADMAP.md).
+Version 1.0.0 is the first official release, **Developer ID signed and notarized**, with hardened runtime and a secure timestamp. Its stapled ticket passes Gatekeeper assessment. The full expansion has open work and release gates, including minimum-OS testing, clean offline installation, fault qualification and physical Finder gestures. Real signed FFmpeg execution/download/lifecycle now pass on the development Mac; see [the exact checkpoint evidence](docs/FFMPEG_CHECKPOINT.md). This official release covers the available features listed above; it does not declare the unfinished seven-milestone expansion complete. See [implementation status](IMPLEMENTATION.md), [capabilities](docs/CAPABILITIES.md), and [remaining milestones](docs/ROADMAP.md).
 
 ## Verify
 
@@ -65,3 +67,15 @@ The media/OCR integration tests need normal access to macOS encoder and recognit
 Generic requests accept `--options OPTIONS.json` for typed options. Inspection, capability, generic output manifests, recipes, and history use versioned JSON; legacy image `convert` retains its original result fields. The standalone development CLI uses a separate worker process. Desktop parsing and conversion use the sandboxed XPC service. Passwords are excluded from persisted jobs and exported recipes. Metadata copying/removal is format-specific; removing GPS properties does not erase arbitrary location-bearing text.
 
 Build distributable engines with [the pack producer workflow](docs/ENGINE_PACKS.md). Follow [the recorded release flow](docs/RELEASING.md) for versioning, signing/notarization, exact-commit CI, draft publication and final verification. Production app packaging uses `scripts/release-app.sh` with a Developer ID identity and stored notarization profile. Scripts also read the ignored `Configuration/Signing.local.plist` for `identity`, `team`, and optional `notaryProfile` / `notaryKeychain` identifiers; explicit `CONVERTER_*` environment variables take precedence. No passwords or private keys belong in this file or repository. Signing and trust checks require normal macOS keychain access; a restricted command sandbox may hide configured identities.
+
+## Branding assets
+
+The sidebar and adaptive menu-bar icon share the vector geometry in `GlacierBrand.swift`. The app-icon catalog includes all ten macOS sizes and uses the existing Glacier palette. To regenerate its PNGs after changing the artwork, run from the project root:
+
+```sh
+mkdir -p build .build/module-cache
+xcrun swiftc -module-cache-path .build/module-cache Sources/FileConverter/GlacierBrand.swift Sources/FileConverter/GlacierTheme.swift scripts/generate-app-icon.swift -o build/generate-app-icon
+build/generate-app-icon
+```
+
+Future release artifacts use `Glacier-File-Converter-VERSION` filenames. See [the release workflow](docs/RELEASING.md) and [first renamed update instructions](docs/INSTALLATION.md#update-or-remove).

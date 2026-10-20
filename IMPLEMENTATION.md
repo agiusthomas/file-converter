@@ -1,6 +1,16 @@
-# Implementation status — 20 October 2026
+# Implementation status — 21 October 2026
 
 Continue implementation using [the completion plan](docs/CONTINUATION_PLAN.md). A [ready-to-paste handoff](docs/NEW_CONVERSATION.md) carries the task into a new conversation. The plan separates working built-in features, adapter-only work, unavailable runtime packs and unverified acceptance gates.
+
+## Glacier File Converter 1.0.0
+
+Version 1.0.0 (build 4) is the first official release requested by the user. It includes all prior conversion features, engine management and the recent Finder-wheel fixes from `1d34af8`: independent hover/selection tracking, release fallback when native callbacks are absent, duplicate-submission prevention, Escape/neutral-drop cancellation and direct conversion without opening the workspace.
+
+Glacier branding appears in the sidebar, window, menus, accessibility descriptions, Settings, Finder service and app metadata. The two-line sidebar header preserves its footprint, Settings reads version/build from the bundle, and shared faceted artwork supplies the sidebar, adaptive menu-bar mark and all ten macOS app-icon sizes. Existing interface colors, controls and conversion wheel artwork are preserved.
+
+Build/CI and release packaging use `Glacier File Converter.app` and `Glacier-File-Converter-VERSION` artifact names. The rename preserves bundle/worker identifiers and all storage paths. Previous public versions and their download links remain unchanged. See [release notes](docs/releases/1.0.0.md), [distribution evidence](docs/evidence/app-1.0.0-release.json), and [first renamed update instructions](docs/INSTALLATION.md#update-or-remove).
+
+Branding verification on 21 October 2026 passed the local Release build, strict nested signature check, all 73 existing tests (zero failures/skips), built metadata/icon checks, and minimum-window-size light/dark inspection. The running app displayed existing job history, renamed menus and the bundle-derived Settings version. The original light appearance was restored afterward. The 1.0.0 app and DMG passed fresh Developer ID signing, Apple notarization, stapling and Gatekeeper assessment. Extracted ZIP and read-only mounted DMG app copies match the signed app CDHash. The signed production XPC worker passed real Media conversion/independent decoding, download interruption/retry, update/rollback, tamper rejection, observed-child cancellation and deferred removal; complete results are recorded in the distribution evidence. The official release does not declare the remaining expansion milestones or untested platforms complete.
 
 ## Published previews 0.2.0 and 0.2.1
 
@@ -71,8 +81,8 @@ Actual signed-app acceptance passes generated audio/video conversion, independen
 
 ## Verification
 
-- 64 automated tests, all passing with the seven opt-in native/external integration checks enabled. Fixtures are generated locally and contain no user documents.
-- Existing image/gesture tests plus PDF ordering/count/geometry/passwords, text/table/subtitle integrity, WebP decoded alpha, archive paths/nesting/selection, real worker exit without a manifest, cancellation, interrupted recovery, partial publication, pending-queue persistence, recipe lineage, codec claims, unsafe manifests and unsigned-pack rejection.
+- 73 automated tests, all passing with native media/OCR, supplemental external-tool and native window-server wheel checks enabled. Fixtures are generated locally and contain no user documents.
+- Wheel regression tests cover missing native callbacks, duplicate release submission, background conversion and cancellation. Existing image/gesture tests also cover PDF ordering/count/geometry/passwords, text/table/subtitle integrity, WebP decoded alpha, archive paths/nesting/selection, real worker exit without a manifest, cancellation, interrupted recovery, partial publication, pending-queue persistence, recipe lineage, codec claims, unsafe manifests and unsigned-pack rejection.
 - Integration tests use native Apple media/OCR services, FFmpeg 8.1.1 and the development Mac’s installed LibreOffice through test-only injected adapters. These tools are not installed as packs or shipped in the app. Real native output settings/geometry, RTF-to-PDF, MP3/WebM and all/selected spreadsheet sheets pass.
 - Native UI on the packaged release-mode app: content inspection through XPC; PNG-to-WebP success; invalid-size fields visibly disable preview/export; recipe editor opens and adds steps. The Developer ID build also passed fresh content inspection and PNG-to-JPG export through its production sandboxed worker. Earlier original-image UI checks also passed.
 - Release-mode build, bundled worker/app strict Developer ID signature checks, timestamp/hardened runtime, signed-pack lifecycle, and tamper rejection pass. Apple notarization, ticket stapling, and Gatekeeper assessment pass for both the preserved 0.2.0 app/DMG and the new 0.2.1 preview app/DMG; Media 0.1.2 notarization is Accepted. Verified notarization credentials remain in the login Keychain; the repository stores no credential material.

@@ -21,8 +21,11 @@ targets:
   FileConverter:
     type: application
     platform: macOS
+    productName: Glacier File Converter
     sources:
       - path: Sources/FileConverter
+      - path: Configuration/Assets.xcassets
+        buildPhase: resources
       - path: Configuration/EngineCatalog.json
         buildPhase: resources
       - path: Configuration/ThirdParty
@@ -32,10 +35,10 @@ targets:
       path: Configuration/App-Info.plist
       properties:
         CFBundleIdentifier: io.local.file-converter
-        CFBundleDisplayName: File Converter
-        CFBundleName: File Converter
-        CFBundleShortVersionString: "0.2.1"
-        CFBundleVersion: "3"
+        CFBundleDisplayName: Glacier File Converter
+        CFBundleName: Glacier File Converter
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "4"
         ConversionWorkerServiceName: "$(CONVERTER_WORKER_SERVICE_IDENTIFIER)"
         LSUIElement: true
         NSHighResolutionCapable: true
@@ -43,9 +46,9 @@ targets:
         LSMinimumSystemVersion: "13.0"
         NSServices:
           - NSMenuItem:
-              default: Prepare in File Converter
+              default: Prepare in Glacier File Converter
             NSMessage: prepareFiles
-            NSPortName: File Converter
+            NSPortName: Glacier File Converter
             NSSendTypes:
               - public.file-url
     dependencies:
@@ -55,7 +58,8 @@ targets:
         embed: true
     settings:
       base:
-        PRODUCT_NAME: File Converter
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        PRODUCT_NAME: Glacier File Converter
         PRODUCT_BUNDLE_IDENTIFIER: io.local.file-converter
   ConversionWorker:
     type: xpc-service
@@ -70,8 +74,8 @@ targets:
       properties:
         CFBundleIdentifier: "$(CONVERTER_WORKER_SERVICE_IDENTIFIER)"
         CFBundleName: ConversionWorker
-        CFBundleVersion: "3"
-        CFBundleShortVersionString: "0.2.1"
+        CFBundleVersion: "4"
+        CFBundleShortVersionString: "1.0.0"
         XPCService:
           ServiceType: Application
           RunLoopType: NSRunLoop

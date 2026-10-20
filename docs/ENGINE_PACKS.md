@@ -1,6 +1,6 @@
 # Engine-pack producer workflow
 
-The 0.2.1 app preview includes a sealed catalog entry for [Media 0.1.2](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2), a signed/notarized FFmpeg 8.1.2 **qualification preview**. The published 0.2.0 app and its empty catalog remain unchanged. Documents, Ebooks, Transcription and PDF structure packs are still required and unpublished. See [exact runtime evidence and limits](FFMPEG_CHECKPOINT.md).
+Glacier File Converter 1.0.0 retains the sealed catalog entry introduced in the 0.2.1 app preview for [Media 0.1.2](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2), a signed/notarized FFmpeg 8.1.2 **qualification preview**. The published 0.2.0 app and its empty catalog remain unchanged. Documents, Ebooks, Transcription and PDF structure packs are still required and unpublished. See [exact runtime evidence and limits](FFMPEG_CHECKPOINT.md).
 
 In the app's **Engines** screen, review sizes/compatibility/notices, explicitly download/install, cancel or retry, inspect source/licenses, update, roll back or remove. Idle changes refresh the coordinator and wheel without restarting; existing queues retain immutable runtime pins until they finish. Removal waits for live app/CLI snapshots and then reclaims files. A source build without the publisher's Developer ID cannot install its downloadable executable code; signature checks are never relaxed for development.
 
@@ -50,7 +50,7 @@ For CLI isolation, `FILE_CONVERTER_ENGINE_DIRECTORY` selects a separate store wi
 
 ```sh
 python3 scripts/qualify-media-pack.py \
-  --app 'build/File Converter.app' \
+  --app 'build/Glacier File Converter.app' \
   --pack build/Media-0.1.0.bundle --update build/Media-0.1.2.bundle \
   --download-update --runtime build/ffmpeg/8.1.2/payload \
   --root /private/tmp/NEW_UNIQUE_QUALIFICATION_FOLDER

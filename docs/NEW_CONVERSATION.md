@@ -1,10 +1,12 @@
-# Continue File Converter in a new conversation
+# Continue Glacier File Converter in a new conversation
 
-Open the existing File Converter project and paste the following prompt. The plan is stored in the repository so implementation can continue without this chat's history.
+**Glacier File Converter 1.0.0** (build 4) is the first official release, requested by the user, including the faceted ice icon, unchanged interface colors/layout and recent Finder-wheel/background-conversion fixes. Build output is `build/Glacier File Converter.app`; downloads start with `Glacier-File-Converter-`. Preserve bundle/worker identifiers and existing storage paths; historical release artifacts keep their original names. This official release does not close the unfinished expansion milestones. See [release notes](releases/1.0.0.md).
+
+Open the existing Glacier File Converter project and paste the following prompt. The plan is stored in the repository so implementation can continue without this chat's history.
 
 ---
 
-Continue implementing File Converter in `/Users/thomasagius/Documents/Projects/file-converter` (repository `https://github.com/agiusthomas/file-converter`). Use the existing checkout and preserve unrelated changes.
+Continue implementing Glacier File Converter in `/Users/thomasagius/Documents/Projects/file-converter` (repository `https://github.com/agiusthomas/file-converter`). Use the existing checkout and preserve unrelated changes.
 
 Read `docs/CONTINUATION_PLAN.md`, `IMPLEMENTATION.md`, `docs/ROADMAP.md`, `docs/ENGINE_PACKS.md`, and applicable project instructions first. The continuation plan is the current execution plan for the original seven-milestone expansion; do not replace the task with another planning-only response.
 
@@ -14,7 +16,7 @@ Checkpoint 1 now has real signed-app/XPC evidence; read `docs/FFMPEG_CHECKPOINT.
 
 Resume the unchecked milestone 1 contract/fault/activation/download failure matrix, responsiveness and entry-point/platform/accessibility gates. macOS 13 and clean offline host checks remain unavailable on this macOS 26.5.1 machine; a deployment-target audit is not execution. Then continue remaining milestones in order. Initial Media lacks LAME/Opus/VP9 and advanced workflows; those are still required. Preserve SwiftUI/AppKit, Glacier, native Finder gestures, originals, legacy image CLI fields, local/offline processing and the single coordinator worker. Do not weaken signing or sandbox verification.
 
-Developer ID and notarization already work locally through the ignored `Configuration/Signing.local.plist`, Keychain profile and existing scripts. Reuse that setup securely; do not ask for private keys/passwords or commit local settings. Restricted command environments can hide macOS signing identities; distinguish that from genuinely missing configuration. The existing v0.2.0 DMG/app are notarized, and the baseline 58-test suite and GitHub build passed. The expanded 64-test suite also passes with opt-in checks enabled. Those checks do not prove the other missing packs or remaining acceptance gates.
+Developer ID and notarization already work locally through the ignored `Configuration/Signing.local.plist`, Keychain profile and existing scripts. Reuse that setup securely; do not ask for private keys/passwords or commit local settings. Restricted command environments can hide macOS signing identities; distinguish that from genuinely missing configuration. The existing v0.2.0 DMG/app are notarized, and the baseline 58-test suite and GitHub build passed. The 1.0.0 suite has 73 tests and passes with native media/OCR, supplemental external-tool and native wheel checks enabled. Those checks do not prove the other missing packs or remaining acceptance gates.
 
 For future releases, read `docs/RELEASING.md`: it records the successful 0.2.1 signing/notarization/packaging flow, secure setup, immutable version/checksum rules, exact-commit CI check, GitHub draft/publication commands and final verification. Reuse the existing setup and keep unfinished milestone gates explicit.
 

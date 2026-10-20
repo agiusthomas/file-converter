@@ -12,11 +12,13 @@
 		16E548061E4BA9C7AAE4913C /* EngineAcceptance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D932C04CCD9E96479985E717 /* EngineAcceptance.swift */; };
 		2033F7DFB437F450F2692241 /* EngineCatalog.json in Resources */ = {isa = PBXBuildFile; fileRef = 8B34E642C7CF643C634E3989 /* EngineCatalog.json */; };
 		28B75131B6C166A24A1CAC1F /* GlacierTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66EF70C6B873C55C83EBCF7E /* GlacierTheme.swift */; };
+		2A74E5398C47908FFDD52A05 /* GlacierBrand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F2E24B32A72F38EE766978B /* GlacierBrand.swift */; };
 		2CCB29315AFF4A4FCE96AA32 /* ConverterCore in Frameworks */ = {isa = PBXBuildFile; productRef = 35D82C67053996AA0916070F /* ConverterCore */; };
 		311FF4FC890AF00A9B9BBADD /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A286AF8515B29677290DFCB /* AppModel.swift */; };
 		38A5F4E9C92438B5B59C7284 /* DragMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A21E5A7C190F0BE390C142E /* DragMonitor.swift */; };
 		3A7702D9878A6E6EDA8EA036 /* ConversionWorker.xpc in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5E29BE091EA86B4E68325541 /* ConversionWorker.xpc */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3CC6018B76679C94C819C29F /* Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C66575F79E77E8B479DDB1E /* Shortcuts.swift */; };
+		4ECA622A5C02481EA5248763 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 14FA16F2F4F90C235DEFA87C /* Assets.xcassets */; };
 		5970B2268CDF5BD8B3C4316B /* EngineLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2810EA608D0364E118F5E7A0 /* EngineLibraryView.swift */; };
 		5C34E8E81B92D0F10D4C1825 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7940E481E3B1D2CE65E5EF /* main.swift */; };
 		6D3781756B4A8FF2F9D93481 /* WheelArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C7BF8F979D0E730BF5798D /* WheelArtwork.swift */; };
@@ -51,14 +53,16 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		008F72B91F7756F42F0C1213 /* Glacier File Converter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Glacier File Converter.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		08CDD14D35D31E22F32A43DC /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
+		0F2E24B32A72F38EE766978B /* GlacierBrand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlacierBrand.swift; sourceTree = "<group>"; };
+		14FA16F2F4F90C235DEFA87C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2810EA608D0364E118F5E7A0 /* EngineLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineLibraryView.swift; sourceTree = "<group>"; };
 		32CC12570FBB1CBBD7983140 /* ThirdParty */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ThirdParty; path = Configuration/ThirdParty; sourceTree = SOURCE_ROOT; };
 		477B919240E0D11A1005F802 /* RecipeEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeEditor.swift; sourceTree = "<group>"; };
 		56214A18D68B81336EB391E4 /* WorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceView.swift; sourceTree = "<group>"; };
 		5E29BE091EA86B4E68325541 /* ConversionWorker.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = ConversionWorker.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
 		66EF70C6B873C55C83EBCF7E /* GlacierTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlacierTheme.swift; sourceTree = "<group>"; };
-		7741DA42224474EACC7F59AF /* FileConverter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FileConverter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C66575F79E77E8B479DDB1E /* Shortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shortcuts.swift; sourceTree = "<group>"; };
 		8A21E5A7C190F0BE390C142E /* DragMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragMonitor.swift; sourceTree = "<group>"; };
 		8A286AF8515B29677290DFCB /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
@@ -95,7 +99,7 @@
 			isa = PBXGroup;
 			children = (
 				5E29BE091EA86B4E68325541 /* ConversionWorker.xpc */,
-				7741DA42224474EACC7F59AF /* FileConverter.app */,
+				008F72B91F7756F42F0C1213 /* Glacier File Converter.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -126,6 +130,7 @@
 				8A21E5A7C190F0BE390C142E /* DragMonitor.swift */,
 				D932C04CCD9E96479985E717 /* EngineAcceptance.swift */,
 				2810EA608D0364E118F5E7A0 /* EngineLibraryView.swift */,
+				0F2E24B32A72F38EE766978B /* GlacierBrand.swift */,
 				66EF70C6B873C55C83EBCF7E /* GlacierTheme.swift */,
 				477B919240E0D11A1005F802 /* RecipeEditor.swift */,
 				7C66575F79E77E8B479DDB1E /* Shortcuts.swift */,
@@ -149,6 +154,7 @@
 		F45BC20683CF2E67C2BC4E6B /* Configuration */ = {
 			isa = PBXGroup;
 			children = (
+				14FA16F2F4F90C235DEFA87C /* Assets.xcassets */,
 				8B34E642C7CF643C634E3989 /* EngineCatalog.json */,
 				32CC12570FBB1CBBD7983140 /* ThirdParty */,
 			);
@@ -204,7 +210,7 @@
 				35D82C67053996AA0916070F /* ConverterCore */,
 			);
 			productName = FileConverter;
-			productReference = 7741DA42224474EACC7F59AF /* FileConverter.app */;
+			productReference = 008F72B91F7756F42F0C1213 /* Glacier File Converter.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -252,6 +258,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4ECA622A5C02481EA5248763 /* Assets.xcassets in Resources */,
 				2033F7DFB437F450F2692241 /* EngineCatalog.json in Resources */,
 				F71A7F24762C692E759685A1 /* ThirdParty in Resources */,
 			);
@@ -269,6 +276,7 @@
 				38A5F4E9C92438B5B59C7284 /* DragMonitor.swift in Sources */,
 				16E548061E4BA9C7AAE4913C /* EngineAcceptance.swift in Sources */,
 				5970B2268CDF5BD8B3C4316B /* EngineLibraryView.swift in Sources */,
+				2A74E5398C47908FFDD52A05 /* GlacierBrand.swift in Sources */,
 				28B75131B6C166A24A1CAC1F /* GlacierTheme.swift in Sources */,
 				CB1633D07D919FFE9257F349 /* RecipeEditor.swift in Sources */,
 				3CC6018B76679C94C819C29F /* Shortcuts.swift in Sources */,
@@ -386,7 +394,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "io.local.file-converter";
-				PRODUCT_NAME = "File Converter";
+				PRODUCT_NAME = "Glacier File Converter";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -402,7 +410,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "io.local.file-converter";
-				PRODUCT_NAME = "File Converter";
+				PRODUCT_NAME = "Glacier File Converter";
 				SDKROOT = macosx;
 			};
 			name = Release;

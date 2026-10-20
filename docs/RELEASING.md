@@ -12,9 +12,15 @@ The restricted command environment can report zero signing identities even when 
 
 1. Inspect Git status, fetch the remote, and check for conflicting changes and existing tags/releases. Preserve unrelated changes. Reuse current authorization when the user has already requested pushing/publishing.
 2. Give changed app/pack artifacts new versions. Align app version/build in `project.yml`, generated Info plists/Xcode project and `EnginePacks.appVersion`; regenerate the project when required. Keep `io.local.file-converter.worker.production.v3` stable across routine version bumps: it identifies a worker protocol/store, not an app build number.
-3. Preserve the previous unversioned `build/File Converter.app` under a versioned backup when needed. Retain old DMG/ZIP/checksums. Scripts overwrite local artifacts for the current version; do not rebuild a published version to replace its downloads. The original `build/SHA256SUMS.txt` remains associated with 0.2.0; newer releases use version-specific checksum filenames.
-4. Update `docs/INSTALLATION.md` **before packaging**; the DMG copies it as `Install File Converter.txt`. Write release notes under `docs/releases/` and align README, implementation status, continuation plan, handoff and evidence. Distinguish implemented, verified, shipped, experimental and blocked work. Partial releases remain previews/prereleases with explicit gaps; publication/notarization does not complete a milestone.
+3. Future source builds produce `build/Glacier File Converter.app`. Preserve any previous unversioned Glacier app under a versioned backup when needed; leave the legacy `build/File Converter.app` and its published artifacts intact. Retain old DMG/ZIP/checksums. Scripts overwrite local artifacts for the current version; do not rebuild a published version to replace its downloads. The original `build/SHA256SUMS.txt` remains associated with 0.2.0; newer releases use version-specific checksum filenames.
+4. Update `docs/INSTALLATION.md` **before packaging**; the DMG copies it as `Install Glacier File Converter.txt`. Write release notes under `docs/releases/` and align README, implementation status, continuation plan, handoff and evidence. Distinguish implemented, verified, shipped, experimental and blocked work. Keep unfinished features and qualification gaps explicit. The user requested 1.0.0 as the first official release of the available features; publication/notarization does not complete the separate expansion milestones.
 5. Run relevant tests and production acceptance. For 0.2.1, `FILE_CONVERTER_MEDIA_TESTS=1 FILE_CONVERTER_EXTERNAL_TESTS=1 ./scripts/swift-local.sh test` passed 64 tests without skips. Developer-installed tools supplement tests; they do not prove delivered packs. Engine proof uses independently packaged runtimes through the Developer ID signed app's sandboxed XPC worker. Record unavailable platform/manual checks honestly.
+
+## Renamed releases
+
+The first official release is **Glacier File Converter 1.0.0**, build 4, requested by the user. Use the new app name, disk-image title and `Glacier-File-Converter-VERSION` filenames. Future publication requires authorization; use a fresh version for changed artifacts. Do not run the release pipeline to replace an already-published version. Preserve all historical links and assets under their original names.
+
+Keep `io.local.file-converter`, worker service identifiers, existing Library storage paths, preferences and engine versions unchanged. Include the first renamed update steps from `INSTALLATION.md` in the next release notes: quit the old app, install Glacier File Converter, remove the old application copy, and preserve Library data. The installer instructions must accurately state which renamed release has actually shipped before packaging.
 
 ## Build, notarize and package
 
@@ -26,9 +32,9 @@ From the project root, with normal Keychain access:
 
 The pipeline builds the release app and CLI/worker, signs nested code and the app with Developer ID, a secure timestamp and hardened runtime, and verifies strict nested signatures. It submits an app ZIP, staples the accepted ticket to the app, assesses Gatekeeper, and recreates the ZIP so it contains the stapled app. `scripts/package-dmg.sh` packages that app with an Applications shortcut and installation instructions, signs/notarizes/staples/verifies the DMG, and verifies its disk image. The release script produces:
 
-- `build/File-Converter-VERSION.dmg`
-- `build/File-Converter-VERSION.zip`
-- `build/File-Converter-VERSION-SHA256SUMS.txt`
+- `build/Glacier-File-Converter-VERSION.dmg`
+- `build/Glacier-File-Converter-VERSION.zip`
+- `build/Glacier-File-Converter-VERSION-SHA256SUMS.txt`
 
 Require **Accepted** for both notarization submissions and retain their IDs/statuses. Require successful staple validation, strict signatures, Gatekeeper's **Notarized Developer ID** assessment and disk-image verification. The script exiting successfully does not establish feature acceptance.
 
@@ -47,25 +53,25 @@ release_version="NEXT_VERSION"
 release_tag="v$release_version"
 release_commit="$(git rev-parse HEAD)"
 gh release create "$release_tag" \
-  "build/File-Converter-$release_version.dmg" \
-  "build/File-Converter-$release_version.zip" \
-  "build/File-Converter-$release_version-SHA256SUMS.txt" \
+  "build/Glacier-File-Converter-$release_version.dmg" \
+  "build/Glacier-File-Converter-$release_version.zip" \
+  "build/Glacier-File-Converter-$release_version-SHA256SUMS.txt" \
   --repo agiusthomas/file-converter --target "$release_commit" \
-  --title "File Converter $release_version Preview" \
+  --title "Glacier File Converter $release_version" \
   --notes-file "docs/releases/$release_version.md" \
-  --draft --prerelease --latest=false
+  --draft --prerelease=false --latest=false
 ```
 
 Inspect the draft with `gh release view`: tag name, target SHA, draft/prerelease flags and exact asset set. Compare GitHub's asset digests/byte sizes with local evidence. Draft URLs may contain `untagged-...`; the final tag URL is established on publication. Reuse a matching interrupted draft; do not create duplicates or replace published assets.
 
-After the exact commit's CI succeeds, publish the prepared preview:
+After the exact commit's CI succeeds, publish the prepared official release:
 
 ```sh
 gh release edit "$release_tag" --repo agiusthomas/file-converter \
-  --draft=false --prerelease --latest=false
+  --draft=false --prerelease=false --latest=true
 ```
 
-Verify the release is public, remains a prerelease, and has the intended final download URLs/digests/sizes. Fetch its tag and confirm it resolves to the exact tested/pushed commit. Check the working tree/remote branch and previous published artifacts/checksums. Report the release URL, pushed commit, checks and remaining qualification limits. Documentation-only follow-up notes do not need another app release.
+Verify the release is public, is marked as the latest official release (not a prerelease), and has the intended final download URLs/digests/sizes. Fetch its tag and confirm it resolves to the exact tested/pushed commit. Check the working tree/remote branch and previous published artifacts/checksums. Report the release URL, pushed commit, checks and remaining qualification limits. Documentation-only follow-up notes do not need another app release.
 
 ## Packs have separate immutable releases
 

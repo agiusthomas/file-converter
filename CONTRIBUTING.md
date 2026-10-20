@@ -1,6 +1,6 @@
 # Contributing
 
-File Converter is in early development. Issues, fixes, accessibility improvements and new conversion engines are welcome.
+Glacier File Converter welcomes contributions. Additional engine packs and advanced workflows remain in development. Issues, fixes, accessibility improvements and new conversion engines are welcome.
 
 ## Development
 
@@ -11,7 +11,7 @@ git clone https://github.com/agiusthomas/file-converter.git
 cd file-converter
 ./scripts/swift-local.sh test
 ./scripts/build-app.sh
-open "build/File Converter.app"
+open "build/Glacier File Converter.app"
 ```
 
 The package currently has no third-party dependencies. The build scripts keep generated files and compiler caches within the project.

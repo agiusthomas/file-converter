@@ -24,13 +24,15 @@ binary_dir="$(/bin/zsh scripts/swift-local.sh build -c "$configuration" --show-b
 xcode_arguments=(-quiet -project FileConverter.xcodeproj -scheme FileConverter -configuration "$xcode_configuration" -destination "generic/platform=macOS" -derivedDataPath build/Xcode -clonedSourcePackagesDirPath build/Packages "CODE_SIGN_IDENTITY=$identity" CODE_SIGN_STYLE=Manual "CONVERTER_WORKER_SERVICE_IDENTIFIER=$worker_service")
 if [[ -n "${CONVERTER_DEVELOPMENT_TEAM:-}" ]]; then xcode_arguments+=("DEVELOPMENT_TEAM=$CONVERTER_DEVELOPMENT_TEAM"); fi
 xcodebuild "${xcode_arguments[@]}" build
-app_dir="$project_dir/build/File Converter.app"
-next_dir="$project_dir/build/File Converter.next.app"
+app_dir="$project_dir/build/Glacier File Converter.app"
+next_dir="$project_dir/build/Glacier File Converter.next.app"
 rm -rf "$next_dir"
-ditto "$project_dir/build/Xcode/Build/Products/$xcode_configuration/File Converter.app" "$next_dir"
+ditto "$project_dir/build/Xcode/Build/Products/$xcode_configuration/Glacier File Converter.app" "$next_dir"
 cp "$binary_dir/convert-file" "$next_dir/Contents/MacOS/convert-file"
 cp "$binary_dir/converter-worker" "$next_dir/Contents/MacOS/converter-worker"
 test -f "$next_dir/Contents/Resources/EngineCatalog.json"
+test -f "$next_dir/Contents/Resources/AppIcon.icns"
+test -f "$next_dir/Contents/Resources/Assets.car"
 test -f "$next_dir/Contents/Resources/ThirdParty/libwebp-COPYING.txt"
 signing_arguments=(--force --options runtime --sign "$identity")
 if [[ "$identity" != "-" ]]; then signing_arguments+=(--timestamp); fi

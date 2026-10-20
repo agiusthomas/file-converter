@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "0F4929DC8164B2EF1179FC9E"
-               BuildableName = "FileConverter.app"
+               BuildableName = "Glacier File Converter.app"
                BlueprintName = "FileConverter"
                ReferencedContainer = "container:FileConverter.xcodeproj">
             </BuildableReference>
@@ -33,7 +33,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0F4929DC8164B2EF1179FC9E"
-            BuildableName = "FileConverter.app"
+            BuildableName = "Glacier File Converter.app"
             BlueprintName = "FileConverter"
             ReferencedContainer = "container:FileConverter.xcodeproj">
          </BuildableReference>
@@ -56,7 +56,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0F4929DC8164B2EF1179FC9E"
-            BuildableName = "FileConverter.app"
+            BuildableName = "Glacier File Converter.app"
             BlueprintName = "FileConverter"
             ReferencedContainer = "container:FileConverter.xcodeproj">
          </BuildableReference>
@@ -75,7 +75,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0F4929DC8164B2EF1179FC9E"
-            BuildableName = "FileConverter.app"
+            BuildableName = "Glacier File Converter.app"
             BlueprintName = "FileConverter"
             ReferencedContainer = "container:FileConverter.xcodeproj">
          </BuildableReference>

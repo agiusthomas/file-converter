@@ -1,4 +1,6 @@
-# File Converter — completion plan
+# Glacier File Converter — completion plan
+
+**Glacier File Converter 1.0.0** (build 4) is the first official release, requested by the user, including the faceted ice icon, unchanged interface colors/layout and recent Finder-wheel/background-conversion fixes. Build output is `build/Glacier File Converter.app`; downloads start with `Glacier-File-Converter-`. Preserve bundle/worker identifiers and existing storage paths; historical release artifacts keep their original names. This official release does not close the unfinished expansion milestones. See [release notes](releases/1.0.0.md).
 
 Updated 20 October 2026. This is the execution plan for finishing the approved seven-milestone expansion. Read it alongside [implementation evidence](../IMPLEMENTATION.md), the [roadmap](ROADMAP.md), and the [new-conversation handoff](NEW_CONVERSATION.md).
 
@@ -16,7 +18,7 @@ The largest immediate gap is that most optional engine adapters still lack usabl
 - Repository: <https://github.com/agiusthomas/file-converter>, branch `main`.
 - Baseline implementation/release commit: `7b9760c6edf89508c0a88f1291974d32a6285e72`. Later planning or implementation commits may follow it; inspect the actual checkout before editing.
 - Preserved preview: <https://github.com/agiusthomas/file-converter/releases/tag/v0.2.0>.
-- Current preview: [0.2.1](https://github.com/agiusthomas/file-converter/releases/tag/v0.2.1), published at the user's explicit request after checkpoint 1. It includes real Media 0.1.2 download/lifecycle support; it does not close any milestone's full acceptance gate. [Release changes/limits](releases/0.2.1.md), [distribution evidence](evidence/app-0.2.1-release.json).
+- Preserved preview: [0.2.1](https://github.com/agiusthomas/file-converter/releases/tag/v0.2.1), published at the user's explicit request after checkpoint 1. It includes real Media 0.1.2 download/lifecycle support; it does not close any milestone's full acceptance gate. [Release changes/limits](releases/0.2.1.md), [distribution evidence](evidence/app-0.2.1-release.json).
 - The preview includes a notarized app, notarized DMG, ZIP, checksums, and installation instructions. Preserve those versioned artifacts; use new versions for changed binaries and packs.
 - The 58-test suite passed locally with opt-in native media/OCR and external-engine integration checks. The release commit also passed GitHub's macOS tests, build, and signature checks. These are baseline evidence, not a substitute for the remaining acceptance work.
 - Developer ID signing and notarization are configured locally. The ignored `Configuration/Signing.local.plist` references the signing identity and Keychain notarization profile. Use the existing scripts and secure configuration; do not request credentials again unless an actual check fails. Never commit private keys, passwords, local signing settings, or compiler caches.
@@ -174,7 +176,7 @@ Full document authoring, video timelines, guaranteed editable PDF-to-Word recons
 | Milestone 6 remaining work | not started | Dedicated Finder extension, recipe entry-point parity, destination/watchers/folder removal qualification remain required |
 | Milestone 7 remaining work | not started | whisper.cpp/model delivery, transcript review and experimental scanned-table workflow remain required |
 
-Next concrete work: complete milestone 1's fault/activation/download failure matrix and responsiveness/entry-point qualification. Execute macOS 13 and clean offline checks on suitable hosts before declaring a full release gate passed; the user-requested 0.2.1 preview retains these explicit qualification gaps. Continue the remaining milestones in the stated order. Do not repeat checkpoint 1 as another fixture-only or planning-only cycle.
+Next concrete work: complete milestone 1's fault/activation/download failure matrix and responsiveness/entry-point qualification. Execute macOS 13 and clean offline checks on suitable hosts before declaring a full release gate passed; the user-requested official 1.0.0 release retains these explicit qualification gaps. Continue the remaining milestones in the stated order. Do not repeat checkpoint 1 as another fixture-only or planning-only cycle.
 
 ## First-session deliverables and handoff
 

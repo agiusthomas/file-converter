@@ -43,7 +43,7 @@ public struct EngineDownload: Codable, Sendable, Equatable, Identifiable {
     public var publisherTeam: String?
 }
 public enum EnginePacks {
-    public static let appVersion = "0.2.1"
+    public static let appVersion = "1.0.0"
     public static let knownIDs: Set<String> = ["media","documents","ebooks","transcription","webp","pdf"]
     public static var defaultRoot: URL {
         if let path = ProcessInfo.processInfo.environment["FILE_CONVERTER_ENGINE_DIRECTORY"] { return URL(fileURLWithPath:path,isDirectory:true) }

@@ -53,7 +53,7 @@ struct WorkspaceView: View {
     }
     private var sidebar: some View {
         VStack(alignment:.leading,spacing:7) {
-            Label("File Converter",systemImage:"arrow.triangle.2.circlepath").font(.system(size:17,weight:.semibold)).padding(.bottom,30)
+            GlacierSidebarBrand()
             ForEach(WorkspacePage.allCases,id:\.self) { page in
                 Button { model.page = page } label: {
                     HStack(spacing:10) { Image(systemName:icon(page)).frame(width:20); Text(page.rawValue); Spacer(); if page == .activity && model.activeCount > 0 { Text("\(model.activeCount)").font(.caption2) } }
@@ -316,7 +316,7 @@ struct WorkspaceView: View {
                 Toggle("Open at login",isOn:Binding(get:{model.launchAtLogin},set:model.setLogin))
             }.padding(18).modifier(GlacierCard())
             VStack(alignment:.leading,spacing:14) { Text("Output access").font(.headline); Text("Results are saved beside originals unless you choose another folder. Existing names receive a number.").font(.callout).foregroundStyle(.secondary); HStack { Button("Allow a folder…") { model.allowOutputFolder() }; Button("Revoke saved folder access") { FolderGrants.shared.revokeAll(); model.destination = nil } } }.padding(18).modifier(GlacierCard())
-            Text("File Converter · development 0.2.0\nJob history stays on this Mac. Passwords are excluded from saved jobs and recipes.").font(.caption).foregroundStyle(.secondary)
+            Text("\(GlacierBrand.name) · \(GlacierBrand.versionDescription)\nJob history stays on this Mac. Passwords are excluded from saved jobs and recipes.").font(.caption).foregroundStyle(.secondary)
         }
     }
 }

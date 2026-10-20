@@ -89,7 +89,7 @@ extension EnginePacks {
         (entry.publisherTeam.map { $0.range(of:#"^[A-Z0-9]{10}$"#,options:.regularExpression) != nil } ?? true)
     }
     public static func incompatibility(_ entry: EngineDownload) -> String? {
-        if let minimum = entry.minimumAppVersion, minimum.compare(appVersion,options:.numeric) == .orderedDescending { return "Requires File Converter \(minimum) or later." }
+        if let minimum = entry.minimumAppVersion, minimum.compare(appVersion,options:.numeric) == .orderedDescending { return "Requires Glacier File Converter \(minimum) or later." }
         let version = ProcessInfo.processInfo.operatingSystemVersion
         let os = "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
         if let minimum = entry.minimumOSVersion, minimum.compare(os,options:.numeric) == .orderedDescending { return "Requires macOS \(minimum) or later." }
@@ -99,7 +99,7 @@ extension EnginePacks {
         let architecture = "x86_64"
         #endif
         if let architectures = entry.architectures, !architectures.contains(architecture) { return "This runtime is incompatible with this Mac's architecture." }
-        if let team = entry.publisherTeam, (try? signingTeam(publisherCodeURL)) != team { return "Requires a Developer ID signed File Converter build from this engine's publisher." }
+        if let team = entry.publisherTeam, (try? signingTeam(publisherCodeURL)) != team { return "Requires a Developer ID signed Glacier File Converter build from this engine's publisher." }
         return nil
     }
 }

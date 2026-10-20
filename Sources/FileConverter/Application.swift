@@ -59,7 +59,7 @@ import Combine
     @objc func showWindow() {
         if window == nil {
             let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1080, height: 790), styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
-            window.title = "File Converter"; window.titlebarAppearsTransparent = true
+            window.title = GlacierBrand.name; window.titlebarAppearsTransparent = true
             window.isReleasedWhenClosed = false; window.minSize = NSSize(width: 930, height: 680)
             window.contentView = NSHostingView(rootView: WorkspaceView(model: model))
             window.center(); window.delegate = self
@@ -84,24 +84,24 @@ import Combine
     }
     private func configureMenus() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        item.button?.image = NSImage(systemSymbolName: "arrow.triangle.2.circlepath", accessibilityDescription: "File Converter")
+        item.button?.image = GlacierBrand.menuBarImage
         item.button?.image?.isTemplate = true
         let menu = NSMenu()
-        menu.addItem(menuItem("Open File Converter", action: #selector(showWindow)))
+        menu.addItem(menuItem("Open \(GlacierBrand.name)", action: #selector(showWindow)))
         menu.addItem(menuItem("Choose files…", action: #selector(chooseImages)))
         menu.addItem(menuItem("Open conversion wheel…", action: #selector(showWheel)))
         menu.addItem(.separator())
         menu.addItem(menuItem("Activity", action: #selector(showActivity)))
         menu.addItem(menuItem("Settings…", action: #selector(showSettings), key: ","))
-        menu.addItem(.separator()); menu.addItem(menuItem("Quit File Converter", action: #selector(quit), key: "q"))
+        menu.addItem(.separator()); menu.addItem(menuItem("Quit \(GlacierBrand.name)", action: #selector(quit), key: "q"))
         item.menu = menu; statusItem = item
         model.$isProcessing.sink { [weak item] working in
-            item?.button?.toolTip = working ? "Processing files…" : "File Converter · Drag files with your wheel modifier"
+            item?.button?.toolTip = working ? "\(GlacierBrand.name) · Processing files…" : "\(GlacierBrand.name) · Drag files with your wheel modifier"
         }.store(in: &subscriptions)
         let mainMenu = NSMenu()
-        let appMenuItem = NSMenuItem(); let appMenu = NSMenu()
+        let appMenuItem = NSMenuItem(title: GlacierBrand.name, action: nil, keyEquivalent: ""); let appMenu = NSMenu(title: GlacierBrand.name)
         appMenu.addItem(menuItem("Settings…", action: #selector(showSettings), key: ","))
-        appMenu.addItem(.separator()); appMenu.addItem(menuItem("Quit File Converter", action: #selector(quit), key: "q"))
+        appMenu.addItem(.separator()); appMenu.addItem(menuItem("Quit \(GlacierBrand.name)", action: #selector(quit), key: "q"))
         appMenuItem.submenu = appMenu; mainMenu.addItem(appMenuItem)
         let fileItem = NSMenuItem(title: "File", action: nil, keyEquivalent: ""); let fileMenu = NSMenu(title: "File")
         fileMenu.addItem(menuItem("Choose files…", action: #selector(chooseImages), key: "o"))
