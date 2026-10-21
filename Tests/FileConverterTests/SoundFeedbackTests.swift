@@ -7,7 +7,8 @@ import XCTest
     var volume: Float = 0
     var played: [SoundCue] = []
     var stopped: [SoundCue] = []
-    func play(_ cue: SoundCue) { played.append(cue) }
+    var onPlay: ((SoundCue) -> Void)?
+    func play(_ cue: SoundCue) { played.append(cue); onPlay?(cue) }
     func stop(_ cue: SoundCue) { stopped.append(cue) }
 }
 
@@ -76,8 +77,13 @@ final class SoundFeedbackTests: XCTestCase {
     @MainActor func testPreviewPlaysWholeSequenceAndMuteCancelsPendingSounds() async throws {
         let context = SoundTestContext(); defer { context.cleanUp() }
         let sounds = context.makeSounds()
+        let completed = expectation(description: "Preview reaches its success cue")
+        context.playback.onPlay = { cue in
+            if cue == .success { completed.fulfill() }
+        }
         sounds.preview()
-        try await Task.sleep(nanoseconds: 2_400_000_000)
+        await fulfillment(of: [completed], timeout: 10)
+        context.playback.onPlay = nil
         XCTAssertEqual(context.playback.played, [.opening, .tick, .tick, .tick, .tick, .tick, .success])
         sounds.preview()
         await Task.yield()
