@@ -42,8 +42,8 @@ targets:
         CFBundleIdentifier: io.local.file-converter
         CFBundleDisplayName: Glacier File Converter
         CFBundleName: Glacier File Converter
-        CFBundleShortVersionString: "1.0.1"
-        CFBundleVersion: "5"
+        CFBundleShortVersionString: "1.0.2"
+        CFBundleVersion: "6"
         ConversionWorkerServiceName: "$(CONVERTER_WORKER_SERVICE_IDENTIFIER)"
         LSUIElement: true
         NSHighResolutionCapable: true
@@ -79,8 +79,8 @@ targets:
       properties:
         CFBundleIdentifier: "$(CONVERTER_WORKER_SERVICE_IDENTIFIER)"
         CFBundleName: ConversionWorker
-        CFBundleVersion: "5"
-        CFBundleShortVersionString: "1.0.1"
+        CFBundleVersion: "6"
+        CFBundleShortVersionString: "1.0.2"
         XPCService:
           ServiceType: Application
           RunLoopType: NSRunLoop

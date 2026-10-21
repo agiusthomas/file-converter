@@ -4,9 +4,9 @@ Targets macOS 13 Ventura or later on an Apple-silicon Mac (M1 or newer). Intel M
 
 ## Install
 
-Download [Glacier File Converter 1.0.1](https://github.com/agiusthomas/file-converter/releases/tag/v1.0.1), the latest patch release. The first official [1.0.0 release](https://github.com/agiusthomas/file-converter/releases/tag/v1.0.0) remains available.
+Download [Glacier File Converter 1.0.2](https://github.com/agiusthomas/file-converter/releases/tag/v1.0.2), the latest patch release. The first official [1.0.0 release](https://github.com/agiusthomas/file-converter/releases/tag/v1.0.0) remains available.
 
-1. Download **Glacier-File-Converter-1.0.1.dmg** from the release page.
+1. Download **Glacier-File-Converter-1.0.2.dmg** from the release page.
 2. Open the DMG and drag **Glacier File Converter** onto **Applications**.
 3. Eject the Glacier File Converter disk image.
 4. Open **Glacier File Converter** from Applications. Confirm macOS's normal first-open download prompt if shown.
@@ -20,7 +20,7 @@ Older [0.2.1 preview downloads](https://github.com/agiusthomas/file-converter/re
 - Add files in the main window, choose an available action and output, preview, then convert. Outputs save beside originals unless you choose another destination; existing files receive a numbered name.
 - If a destination is unavailable, open **Settings → Output access → Allow a folder…** and choose the folder again.
 - Enable the Finder wheel in Settings, then hold **Shift** while dragging files in Finder. You can change the modifier to Option or Control.
-- Sound effects default to Soft Detent at 30% volume. Use **Settings → Sound effects** to mute, adjust volume or preview the wheel and success cues. Success sounds play once per fully successful manual batch; watched folders stay silent.
+- Sound effects default to Soft Detent at 100% volume. Use **Settings → Sound effects** to mute, adjust volume or preview the wheel and success cues. Success sounds play once per fully successful manual batch; watched folders stay silent.
 - Closing the window keeps the app running in the menu bar. Use its menu to reopen the window or choose **Quit Glacier File Converter** (or **Quit File Converter** in 0.2.1).
 - Launch at login and watched folders are optional settings.
 
@@ -36,11 +36,11 @@ To remove the app, quit it and move **Glacier File Converter.app** (or **File Co
 
 ## Verify a download (optional)
 
-The 1.0.1 release includes `Glacier-File-Converter-1.0.1-SHA256SUMS.txt`; the existing 0.2.1 preview retains `File-Converter-0.2.1-SHA256SUMS.txt`. After downloading the DMG and checksum file into the same folder, compare the DMG's SHA-256 checksum with the matching line in that file. The ZIP is an alternative app download: unzip it, move the app to Applications, and follow the same first-use steps.
+The 1.0.2 release includes `Glacier-File-Converter-1.0.2-SHA256SUMS.txt`; the existing 0.2.1 preview retains `File-Converter-0.2.1-SHA256SUMS.txt`. After downloading the DMG and checksum file into the same folder, compare the DMG's SHA-256 checksum with the matching line in that file. The ZIP is an alternative app download: unzip it, move the app to Applications, and follow the same first-use steps.
 
 ## Media engine preview
 
-Glacier File Converter 1.0.1 retains the [Media 0.1.2 qualification preview](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2), using independently built FFmpeg 8.1.2. It requires the publisher's Developer ID signed app; an unsigned or differently signed source build cannot install the publisher's executable packs. The preserved 0.2.0 app retains its original empty engine catalog and cannot install this newer pack.
+Glacier File Converter 1.0.2 retains the [Media 0.1.2 qualification preview](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2), using independently built FFmpeg 8.1.2. It requires the publisher's Developer ID signed app; an unsigned or differently signed source build cannot install the publisher's executable packs. The preserved 0.2.0 app retains its original empty engine catalog and cannot install this newer pack.
 
 Open **Engines**, review compatibility/sizes/notices, then choose **Download and install**. Installation is explicit and cancellable; a retry keeps the previous active version until verification/activation succeeds. Updates expose a rollback button. Engine changes activate when current queued work finishes, while running jobs retain their runtime versions. **Remove pack** disables future activation and reclaims files after live pins release. Use the license/source disclosure to inspect the complete runtime. Once installed, conversions run locally without a network connection.
 

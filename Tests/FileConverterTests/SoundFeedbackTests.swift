@@ -52,7 +52,7 @@ final class SoundFeedbackTests: XCTestCase {
         let context = SoundTestContext(); defer { context.cleanUp() }
         let sounds = context.makeSounds()
         XCTAssertTrue(sounds.enabled)
-        XCTAssertEqual(sounds.volume, 0.3)
+        XCTAssertEqual(sounds.volume, 1.0)
         sounds.volume = 0.6
         XCTAssertEqual(context.playback.volume, 0.6, accuracy: 0.001)
         sounds.enabled = false
@@ -70,7 +70,7 @@ final class SoundFeedbackTests: XCTestCase {
         restored.volume = 2
         XCTAssertEqual(restored.volume, 1)
         restored.volume = .nan
-        XCTAssertEqual(restored.volume, 0.3)
+        XCTAssertEqual(restored.volume, 1.0)
     }
 
     @MainActor func testPreviewPlaysWholeSequenceAndMuteCancelsPendingSounds() async throws {

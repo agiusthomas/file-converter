@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "version": "1.0.2",
+  "build": "6",
+  "releaseKind": "official-patch",
+  "releaseURL": "https://github.com/agiusthomas/file-converter/releases/tag/v1.0.2",
+  "sourceRef": "v1.0.2",
+  "sourceBaseCommit": "0b71a3e3787ae20ebd5e679e0c75d0ab8dac73df",
+  "appCDHash": "5e8c34b21bc61b0c509494f31c861f8253c3a8c3",
+  "publisherTeam": "QJ75C25V8L",
+  "notarization": {
+    "app": {
+      "id": "178316f3-ba28-4ab1-adb4-dde7811bb763",
+      "status": "Accepted"
+    },
+    "dmg": {
+      "id": "7154416f-bf1b-48ef-9b86-3ea01a37d9a4",
+      "status": "Accepted"
+    }
+  },
+  "checks": {
+    "appStrictNestedDeveloperIDSignature": "passed",
+    "appSecureTimestampAndHardenedRuntime": "passed",
+    "appStapleValidation": "passed",
+    "appGatekeeper": "Notarized Developer ID",
+    "dmgStrictSignature": "passed",
+    "dmgStapleValidation": "passed",
+    "dmgGatekeeper": "Notarized Developer ID",
+    "dmgFilesystemChecksum": "passed",
+    "extractedZIPAppStrictSignatureStapleAndGatekeeper": "passed",
+    "mountedDMGAppStrictSignatureStapleAndGatekeeper": "passed",
+    "packagedAppCDHashesMatch": true,
+    "bundledSoundAssetsMatchSource": true,
+    "installerShortcutAndInstructions": "passed",
+    "artifactChecksums": "passed",
+    "previousV020V021V100V101ArtifactsUnchanged": true,
+    "localTests": {
+      "passed": 85,
+      "failed": 0,
+      "skipped": 0,
+      "nativeMediaOCR": true,
+      "supplementalExternalTools": true,
+      "nativeWheel": true
+    },
+    "soundFeedbackAcceptance": {
+      "defaultVolumeAndSavedPreferences": "Passed automated SoundFeedbackTests at 100% default; existing saved volume and mute preferences preserved.",
+      "signedAppManualUI": "Not repeated for this default-volume patch; prior 1.0.1 acceptance retained in its evidence.",
+      "audioQuality": "No loopback recording or subjective sound audition repeated."
+    },
+    "mediaRuntimeQualification": "Unchanged Media 0.1.2; full lifecycle proof retained in app-1.0.0-release.json, not repeated for this sound patch.",
+    "exactCommitGitHubCI": "Required before publication; final run URL and full SHA are in the GitHub release notes"
+  },
+  "artifacts": [
+    {
+      "name": "Glacier-File-Converter-1.0.2.dmg",
+      "bytes": 4785808,
+      "sha256": "aec551d1eb8086dad201e2b40b371f4a0482049b27918fa1f491cea486697bb3",
+      "url": "https://github.com/agiusthomas/file-converter/releases/download/v1.0.2/Glacier-File-Converter-1.0.2.dmg"
+    },
+    {
+      "name": "Glacier-File-Converter-1.0.2.zip",
+      "bytes": 4365256,
+      "sha256": "27b2c28226f98ce695a937ddf5d132d1428bb25f90cccea250ad63326d634dd0",
+      "url": "https://github.com/agiusthomas/file-converter/releases/download/v1.0.2/Glacier-File-Converter-1.0.2.zip"
+    },
+    {
+      "name": "Glacier-File-Converter-1.0.2-SHA256SUMS.txt",
+      "bytes": 198,
+      "sha256": "70831620d38b0fa7a0e280bf1145a94cc2cf36e36ca7b6935b804e2ddc8423c4",
+      "url": "https://github.com/agiusthomas/file-converter/releases/download/v1.0.2/Glacier-File-Converter-1.0.2-SHA256SUMS.txt"
+    }
+  ],
+  "qualificationLimits": [
+    "macOS 26.5.1 arm64 tested; macOS 13 execution and a clean offline second Mac remain unverified.",
+    "Physical Finder gestures across displays/Spaces/edges and full accessibility/large-batch/fault qualification remain open.",
+    "Media 0.1.2 remains a limited preview; Documents/Ebooks/Transcription/PDF structure packs remain unpublished.",
+    "This sound patch does not complete the separate seven-milestone expansion."
+  ]
+}

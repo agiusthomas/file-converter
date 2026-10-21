@@ -23,7 +23,7 @@ enum SoundCue: String, CaseIterable {
 /// Missing assets or unavailable audio output are deliberately non-fatal.
 @MainActor final class BundledSoundPlayback: SoundPlayback {
     private var players: [SoundCue: AVAudioPlayer] = [:]
-    var volume: Float = 0.3 {
+    var volume: Float = 1.0 {
         didSet { players.values.forEach { $0.volume = volume } }
     }
 
@@ -77,14 +77,14 @@ enum SoundCue: String, CaseIterable {
         self.defaults = defaults
         self.playback = playback ?? BundledSoundPlayback()
         self.now = now
-        defaults.register(defaults: ["soundEffectsEnabled": true, "soundEffectsVolume": 0.3])
+        defaults.register(defaults: ["soundEffectsEnabled": true, "soundEffectsVolume": 1.0])
         enabled = defaults.bool(forKey: "soundEffectsEnabled")
         volume = Self.clamped(defaults.double(forKey: "soundEffectsVolume"))
         self.playback.volume = Float(volume)
     }
 
     private static func clamped(_ value: Double) -> Double {
-        value.isFinite ? min(1, max(0, value)) : 0.3
+        value.isFinite ? min(1, max(0, value)) : 1.0
     }
 
     func wheelOpened() {

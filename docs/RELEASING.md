@@ -8,6 +8,10 @@ Use the existing checkout at `/Users/thomasagius/Documents/Projects/file-convert
 
 The restricted command environment can report zero signing identities even when Developer ID works. Signing, Apple services, notarization, disk-image operations and GitHub networking worked with normal macOS/Keychain access outside that restriction. Use the environment's approved escalation mechanism when needed; distinguish a sandbox limitation from genuinely missing configuration. Never substitute ad-hoc signing, disable Gatekeeper/library validation, strip quarantine, or weaken the worker sandbox to pass a release check.
 
+## Version numbering
+
+For each app release, increment the final digit: 1.0.1 → 1.0.2 → … → 1.0.9 → 1.1.0. After a final digit of 9, reset it to 0 and increment the middle number. Increment the internal bundle build number for every release as well. This is the user's requested release sequence; do not substitute a different version scheme.
+
 ## Prepare a fresh version
 
 1. Inspect Git status, fetch the remote, and check for conflicting changes and existing tags/releases. Preserve unrelated changes. Reuse current authorization when the user has already requested pushing/publishing.

@@ -1,6 +1,6 @@
 # Glacier sound previews
 
-**Soft Detent** is the active set: a muted opening, dial-like selection ticks, and a short two-note success cue. Settings provides a sound toggle, volume (30% by default), and a preview button. App volume follows the Mac's output volume and mute setting.
+**Soft Detent** is the active set: a muted opening, dial-like selection ticks, and a short two-note success cue. Settings provides a sound toggle, volume (100% by default), and a preview button. App volume follows the Mac's output volume and mute setting.
 
 These original synthesized sounds are included under the repository's MIT license. They have no downloaded samples or runtime dependencies. Regenerate all assets and previews with `python3 scripts/generate-sound-assets.py`.
 

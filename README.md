@@ -1,6 +1,6 @@
 # Glacier File Converter
 
-**Glacier File Converter 1.0.1** adds subtle Soft Detent feedback for the conversion wheel and successful manual conversions, with mute, volume and sound preview controls. See [patch release notes](docs/releases/1.0.1.md) and the [1.0.0 feature overview](docs/releases/1.0.0.md).
+**Glacier File Converter 1.0.2** sets the default sound volume to 100%, while preserving saved volume preferences. Soft Detent feedback, mute and sound previews remain available. See [patch release notes](docs/releases/1.0.2.md) and the [1.0.0 feature overview](docs/releases/1.0.0.md).
 
 Development continuation: [completion plan](docs/CONTINUATION_PLAN.md) · [new-conversation handoff](docs/NEW_CONVERSATION.md). The full seven-milestone expansion remains unfinished.
 
@@ -10,9 +10,9 @@ Requires **macOS 13+ on Apple silicon**. Licensed under [MIT](LICENSE), with [th
 
 ## Install
 
-Download the signed and notarized **[Glacier File Converter 1.0.1 DMG](https://github.com/agiusthomas/file-converter/releases/download/v1.0.1/Glacier-File-Converter-1.0.1.dmg)**, open it, drag **Glacier File Converter** to **Applications**, eject the disk image, and open the app from Applications. No Xcode or command-line tools are needed to use it.
+Download the signed and notarized **[Glacier File Converter 1.0.2 DMG](https://github.com/agiusthomas/file-converter/releases/download/v1.0.2/Glacier-File-Converter-1.0.2.dmg)**, open it, drag **Glacier File Converter** to **Applications**, eject the disk image, and open the app from Applications. No Xcode or command-line tools are needed to use it.
 
-See [installation, first-use, update, and removal instructions](docs/INSTALLATION.md). The 1.0.1 release includes built-in conversions and a [downloadable Media runtime qualification preview](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2). The preserved 0.2.0 app cannot install that newer pack. Read the [1.0.1 release notes](docs/releases/1.0.1.md) before installing. Earlier [0.2.1 preview downloads](https://github.com/agiusthomas/file-converter/releases/tag/v0.2.1) retain their original filenames and remain available.
+See [installation, first-use, update, and removal instructions](docs/INSTALLATION.md). The 1.0.2 release includes built-in conversions and a [downloadable Media runtime qualification preview](https://github.com/agiusthomas/file-converter/releases/tag/engine-media-v0.1.2). The preserved 0.2.0 app cannot install that newer pack. Read the [1.0.2 release notes](docs/releases/1.0.2.md) before installing. Earlier [0.2.1 preview downloads](https://github.com/agiusthomas/file-converter/releases/tag/v0.2.1) retain their original filenames and remain available.
 
 ## Run
 
